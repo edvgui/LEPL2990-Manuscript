@@ -16,7 +16,7 @@
 
 % Name of the reader(s)
 \readerone{Oliver \textsc{Bonaventure}}
-\readertwo{Anthony \textsc{Gego}}
+\readertwo{Anthony \textsc{Gégo}}
 
 % Academic year (update if necessary)
 \years{2019--2020}
@@ -25,6 +25,20 @@
 \begin{document}
   % Front cover page
   \maketitle
+  
+  \include{acknowledgements}
+  \include{abstract}
+  
+  \tableofcontents
+  
+  \include{chapters/01-introduction}
+  \include{chapters/02-state-of-the-art}
+  \include{chapters/03-measurements}
+  \include{chapters/04-results}
+  \include{chapters/05-conclusion}
+  
+  \bibliography{bibliography}{}
+  \bibliographystyle{plain}
 
   % Back cover page
   \backcoverpage

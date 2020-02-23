@@ -7,6 +7,7 @@
 % Usefull packages
 \usepackage[utf8x]{inputenc}
 \usepackage[english]{babel}
+\usepackage{cite}
 \RequirePackage{microtype}   % Improves typography
 \RequirePackage[T1]{fontenc}
 \RequirePackage{lmodern}
