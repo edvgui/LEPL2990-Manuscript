@@ -30,13 +30,22 @@ The key features of INGInious, that allow it to meet the requirement of a code g
 \end{itemize}
 
 \subsection{Bottlenecks}
+When a task is submitted, we can count five delays before the answer can be delivered to the student:
+\begin{itemize}
+  \item The sending time: the time it takes for the task to be sent to the back-end.
+  \item The waiting time: the time the task will spend in the queue, waiting for an available container.
+  \item The booting time: the time it takes to the container to boot and be ready to evaluate the task.
+  \item The grading time: the time it takes for the code to run and for the teacher's container to grade it.
+  \item The response time: the time to send the reponse to the student.
+\end{itemize}
+For the first and the last one, supposing that the machine hosting the website is not overwhelmed, the delay depends entirely on the network, this is a bit out of our hands here.  The waiting time is directly related to the current load on the platform, this is a more a symptom of the server overwhelming than its cause, it could be directly solved by using a scaling strategies (see section \ref{section:scaling}).  And then we come to the booting time and the grading time, which directly depends on the containerization technology used and on the hardware performances.
 
-\section{Scaling}
-Currently, the resources provided to INGInious vary depending on the load that the platform is expected to be facing.  Typically, when the grading of an exam is done by INGInious, the platform is scaled up, and during the holidays it is scaled down.  
-In general, the scaling can be done in two directions, horizontally, or vertically.
+\section{Scaling} \label{section:scaling}
+Currently, the resources provided to INGInious vary depending on the load that the platform is expected to be facing.  Typically, when the grading of an exam is done by INGInious, the platform is scaled up, and during the holidays it is scaled down.  When it comes to scaling, two strategies can be used; vertical scaling and horizontal scaling.
 
-\subsection{Vertical scaling}
+\paragraph{} \textbf{Vertical scaling} consists in adding more resources on a single machine, to improve its performances when needed.  For example, when the number of tasks arriving to the server grow, we could increase the number of virtual Cores allocated to the Virtual Machine hosting the platform in order to be able to threat more of them concurrently.  If the size of the waiting queue is increasing, we might want to make more RAM available.
 
-\subsection{Horizontal scaling}
+\paragraph{} \textbf{Horizontal scaling} consists in sharing the workload across multiple machines, so that each machine can handle a small part of it.  This is a solution widely used nowadays as it allows to scale up virtually indefinetely, which is not the case with vertical scally where we depend on the maximum capacity of the hardware.  This requires to rethink the architecture of the platform globally.
 
 \section{Intentions}
+The master thesis aims at improving INGInious, regarding its performances and its scalability.  To do so, I will search and compare different containerization technologies that could be used instead of Docker.  The goal is to find an alternative that decrease the booting time (and the grading time) without loosing any of the key features of the platform.  If such an alternative is found and proven to be worth the change, INGInious could then be refreshed with it.
