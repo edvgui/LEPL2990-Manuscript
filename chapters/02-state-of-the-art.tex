@@ -14,15 +14,16 @@ In this chapter I will present how things are today in the field of containeriza
   \end{center}
 \end{figure}
 
-\paragraph{}Because of what they are, those two solutions usually didn't apply to the same situations.  A VM (Virtual Machine) is a much more complicated and complete structure, that takes more time to boot but provides a better isolation.  And the Container is much lighter, quicker to launch but less isolated.  Traditionally, in the Cloud Computing world, VMs rely in IaaS (Infrastructure-as-a-Service) while Containers rely in PaaS (Platform-as-a-Service).
+\paragraph{}Because of what they are, those two solutions usually didn't apply to the same situations.  A VM (Virtual Machine) is a much more complicated and complete structure, that takes more time to boot but provides a better isolation.  And the Container is much lighter, quicker to launch but less isolated.  Traditionally, in the Cloud Computing world, VMs rely in IaaS (Infrastructure-as-a-Service) while Containers rely in PaaS (Platform-as-a-Service).  This paper \cite{dua2014virtualization} made a detailed point about it back in 2014.
 
-\paragraph{}But recently things started to change, some new solutions seem to have the advantage of both sides, the isolation of a VM and the portability and lightness of a Container.  This is why some VM-based solution are presented here.  Even though VMs do not come from the same domain of applciation as Containers, and even though in the case of INGInious, Containers were 5 years ago the obvious choice, it might now be time to reconsider it.
+\paragraph{}But recently things started to change, some new solutions seem to have the advantage of both sides, the isolation of a VM and the portability and lightness of a Container.  This is why some VM-based solution are presented here.  Even though VMs do not come from the same domain of application as Containers, and even though in the case of INGInious, Containers were 5 years ago the obvious choice, it might now be time to reconsider it.
 
 \section{Containerization solutions}
 
 Here bellow are presented some containerization solutions.
 
 \subsection{Docker}
+
 \subsection{Podman}
 \subsection{runC}
 \subsection{SAND}
@@ -30,7 +31,7 @@ Here bellow are presented some containerization solutions.
 
 \section{Virtualization solutions}
 
-Here bellow are presented some virtualization solutions.
+Here bellow are presented some lightweight virtualization solutions.
 
 \subsection{Firecracker}
 \subsection{Kata Containers}
