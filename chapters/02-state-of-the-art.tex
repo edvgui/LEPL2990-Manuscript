@@ -23,6 +23,9 @@ In this chapter I will present how things are today in the field of containeriza
 Here bellow are presented some containerization solutions.
 
 \subsection{Docker}
+\paragraph{}Docker\cite{merkel2014docker} is today probably the most known solution for containerization.  Since its apparition in 2014, its interest for the PaaS sector hasn't ceased to grow.  It is now tightly binded with Kubernetes, "an open-source system for automating deployment, scaling, and management of containerized applications" \cite{kubernetes}.  It consists in a daemon, running on the host, that allows to easily manage different containers.  It relies on Containerd, "An industry-standard container runtime with an emphasis on simplicity, robustness and portability"\cite{containerd}, which itself uses runC (we will talk about it later).
+
+The main advantages of Docker are its simplicity of use, its production-grade quality, the huge fleet of ready-to-run containers publicly available and a lot of useful tools (like \texttt{docker-compose} that come along with it).  This is the solution currently used by INGInious.
 
 \subsection{Podman}
 \subsection{runC}
