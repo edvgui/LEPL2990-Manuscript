@@ -3,7 +3,7 @@
 In this chapter I will present how things are today in the field of containerization.  I will start with a quick reminder of the difference between virtualization and containerization, then go through some existing solutions for both of those concepts.
 
 \section{Virtualization vs Containerization}
-\paragraph{}Both virtualization and containerization aims at providing an abstraction layer that allows the application or the OS located above the abstraction to behave like if he was the only one present on this layer.  The key difference between those two is where this abstraction layer is located.  
+\paragraph{}Both virtualization and containerization aims at providing an abstraction layer that allows the application or the OS (Operating System) located above the abstraction to behave like if it was the only one present on this layer.  The key difference between those two is where this abstraction layer is located.  
 
 \paragraph{}To keep it simple, for the virtualization, the abstraction is between the OS and the hardware, the OS thinks it is running on a baremetal machine but is actually hosted on another machine.  For the containerization, the abstraction is between the appliciation and the OS, the application thinks it is the only one running in the system but it is actually only isolated in its own namespace.  As a good illustration is better than a thousand words, Figure \ref{fig:virt-vs-cont} represents this difference. 
 \begin{figure}[!h]
@@ -17,6 +17,21 @@ In this chapter I will present how things are today in the field of containeriza
 \paragraph{}Because of what they are, those two solutions usually didn't apply to the same situations.  A VM (Virtual Machine) is a much more complicated and complete structure, that takes more time to boot but provides a better isolation.  And the Container is much lighter, quicker to launch but less isolated.  Traditionally, in the Cloud Computing world, VMs rely in IaaS (Infrastructure-as-a-Service) while Containers rely in PaaS (Platform-as-a-Service).  This paper \cite{dua2014virtualization} made a detailed point about it back in 2014.
 
 \paragraph{}But recently things started to change, some new solutions seem to have the advantage of both sides, the isolation of a VM and the portability and lightness of a Container.  This is why some VM-based solution are presented here.  Even though VMs do not come from the same domain of application as Containers, and even though in the case of INGInious, Containers were 5 years ago the obvious choice, it might now be time to reconsider it.
+
+\section{Namespaces}
+\paragraph{}Namespaces are a feature of the Linux kernel since 2002, they are a key element that made containerization possible.  A namespace can be associated to a context, which is a partition of all the resources of a system that a set of processes has access to, while other processes can't.  Those sets of resources can be of seven kinds:
+\begin{itemize}
+\renewcommand\labelitemi{--}
+  \item \textbf{mnt} (Mount): This controls the mount points.  Processes can only have access to the mount point of their namespace.
+  \item \textbf{pid} (Process ID): This allows each process in each namespace to get a process id assigned indepedently of other namespaces porcesses.
+  \item \textbf{net} (Network): This provides a virtualized network stack.
+  \item \textbf{ipc} (Interprocess Communication): This allows processes of a same namespace to communicate with one another, for example by sharing some memory.
+  \item \textbf{uts} (Hostname): This allows to have different hostnames on a same machine, each hostname being considered as unique by the processes of its namespace.
+  \item \textbf{user} (User ID): This allows to pretend to change the user in a namespace, si that it could behave like he had more privileges for example.
+  \item \textbf{cgroup} (Control group): This provides a virtualization of the resources available to the processes of the namespace.
+\end{itemize}
+
+\paragraph{}When a Linux machine starts, it initiate one namespace of each type in which all the processes run.  The processes can then choose to create and switch of namespaces.
 
 \section{Containerization solutions}
 
@@ -39,3 +54,5 @@ Here bellow are presented some lightweight virtualization solutions.
 \subsection{Firecracker}
 \subsection{Kata Containers}
 \subsection{LightVM} \cite{manco2017my}
+
+\section{Summary}
