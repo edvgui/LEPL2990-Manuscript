@@ -5,7 +5,7 @@ In this chapter I will present how things are today in the field of containeriza
 \section{Virtualization vs Containerization}
 \paragraph{}Both virtualization and containerization aims at providing an abstraction layer that allows the application or the OS (Operating System) located above the abstraction to behave like if it was the only one present on this layer.  The key difference between those two is where this abstraction layer is located.  
 
-\paragraph{}To keep it simple, for the virtualization, the abstraction is between the OS and the hardware, the OS thinks it is running on a baremetal machine but is actually hosted on another machine.  For the containerization, the abstraction is between the appliciation and the OS, the application thinks it is the only one running in the system but it is actually only isolated in its own namespace.  As a good illustration is better than a thousand words, Figure \ref{fig:virt-vs-cont} represents this difference. 
+\paragraph{}To keep it simple, for the virtualization, the abstraction is between the OS and the hardware, the OS thinks it is running on a baremetal machine but is actually hosted on another machine.  For the containerization, the abstraction is between the appliciation and the OS, the application thinks it is the only one running in the system but it is actually only isolated in its own namespace.  Multiple containers on a same host share then the same kernel.  As a good illustration is better than a thousand words, Figure \ref{fig:virt-vs-cont} represents this difference. 
 \begin{figure}[!h]
   \begin{center}
     \includegraphics[width=\linewidth]{images/Virtualization-Containerization.png}
@@ -38,14 +38,18 @@ In this chapter I will present how things are today in the field of containeriza
 Here bellow are presented some containerization solutions.
 
 \subsection{Docker}
-\paragraph{}Docker\cite{merkel2014docker} is today probably the most known solution for containerization.  Since its apparition in 2014, its interest for the PaaS sector hasn't ceased to grow.  It is now tightly binded with Kubernetes, "an open-source system for automating deployment, scaling, and management of containerized applications" \cite{kubernetes}.  It consists in a daemon, running on the host, that allows to easily manage different containers.  It relies on Containerd, "An industry-standard container runtime with an emphasis on simplicity, robustness and portability"\cite{containerd}, which itself uses runC (we will talk about it later).
+\paragraph{}Docker\cite{merkel2014docker} is today probably the most known solution for containerization.  Since its apparition in 2014, its interest for the PaaS sector hasn't ceased to grow.  It is now tightly binded with Kubernetes, "an open-source system for automating deployment, scaling, and management of containerized applications" \cite{kubernetes}.  It consists in a daemon, running on the host, that allows to easily manage different containers.  It relies on Containerd, "An industry-standard container runtime with an emphasis on simplicity, robustness and portability"\cite{containerd}, which itself uses runc ("runc is a CLI tool for spawning and running containers according to the OCI specification." \cite{runc}).
 
 The main advantages of Docker are its simplicity of use, its production-grade quality, the huge fleet of ready-to-run containers publicly available and a lot of useful tools (like \texttt{docker-compose} that come along with it).  This is the solution currently used by INGInious.
 
 \subsection{Podman}
 \paragraph{}"Podman is a daemonless container engine for developing, managing, and running OCI Containers on your Linux System."\cite{podman}  Podman present itself as a viable true alternative to Docker.  Its main difference is the fact that it runs daemonless, it runs containers as child processes, it isn't therefore based on containerd as docker is.  It can also manage pods, which are groups of containers deployed on the same machine.  Podman is an Open-Source project, and is still growing a lot, the latest version at this day (2020-02-28) is v1.8.0, released 21 days ago, and already 287 commits have been done since then!
-\subsection{runC}
-\subsection{SAND}
+
+\subsection{LXC}
+\paragraph{}"LXC is a userspace interface for the Linux kernel containment features."\cite{lxc}  This solution is developed and maintained by Canonial Ltd.  Docker used to be based on LXC until it created its own execution environment.  The main difference between LXC and Docker is that LXC launches a complete Linux init for each new container, while Docker will only launch a service, the application, in the container.
+
+\subsection{SAND} 
+
 \subsection{SOCK} \cite{oakes2018sock}
 
 \section{Virtualization solutions}
