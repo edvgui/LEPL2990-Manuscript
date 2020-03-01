@@ -49,8 +49,16 @@ The main advantages of Docker are its simplicity of use, its production-grade qu
 \paragraph{}"LXC is a userspace interface for the Linux kernel containment features."\cite{lxc}  This solution is developed and maintained by Canonial Ltd.  Docker used to be based on LXC until it created its own execution environment.  The main difference between LXC and Docker is that LXC launches a complete Linux init for each new container, while Docker will only launch a service, the application, in the container.
 
 \subsection{SAND} 
+\paragraph{}SAND\cite{akkus2018sand} aims at improving the performance of serverless computing with two techniques: application-level sandboxing, and a hierarchical message bus.  Serverless can be seen as an improvment of Paas, with better scalability and efficiency.  It can really be associated with what INGInious does when testing a submission; it is basically, running a function, on user demand, with no direct link with the structure of the application.  The main difference between what INGInious does and what serverless offers is that usually, in serverless, you run a bunch of functions over and over again, only with different inputs.  With INGInious, the different inputs to those functions are the code of the student to execute, which makes the function execution unique for each submission.  This is still interesting to look at the improvment done in this sector though, as the underlying technology is quite similar, as it is often based on containers.  
+\paragraph{} Coming back to SAND, here are the two interesting techniques they used to improve serverless computing:
+\begin{itemize}
+\renewcommand\labelitemi{--}
+  \item \textbf{Application Sandboxing}: The key idea here is to manage differentiate multiple executions of different functions with multiple execution of a same function.  In the first case, as usual, a new container is launched on the new function demand and the function is executed inside of it.  In the second case, instead of lauching a new container with exactly the same configuration as an already running one, we only fork a process inside de running container to deal with the new demand, which is much faster than creating a new container.  The problem in our case, is that we loose the isolation between student code execution, which is not desirable.
+  \item \textbf{Hierarchical Message Queuing}: The goal to this is to facilitate communication between functions that interact with one another (i.e. the output of a function is the input of another one).  To do so they use a two-level communication bus: global and local.  Global means that the communication is made between different functions on different hosts, while local means different functions on the same host.  As accessing the local bus is much faster than the global one, it can decrease latency for functions on the same host.  In our case, as INGInious is still running on a single host, this shouldn't improve our performances that much.  But in a near future where INGInious get a new horizaontally scaled architecture, it might be interesting to come back on it.
+\end{itemize}
 
-\subsection{SOCK} \cite{oakes2018sock}
+\subsection{SOCK} 
+\paragraph{}Sock\cite{oakes2018sock}
 
 \section{Virtualization solutions}
 
