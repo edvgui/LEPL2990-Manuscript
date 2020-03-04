@@ -59,7 +59,7 @@ The main advantages of Docker are its simplicity of use, its production-grade qu
   \item \textbf{Hierarchical Message Queuing}: The goal to this is to facilitate communication between functions that interact with one another (i.e. the output of a function is the input of another one).  To do so they use a two-level communication bus: global and local.  Global means that the communication is made between different functions on different hosts, while local means different functions on the same host.  As accessing the local bus is much faster than the global one, it can decrease latency for functions on the same host.  In our case, as INGInious is still running on a single host, this shouldn't improve our performances that much.  But in a near future where INGInious get a new horizaontally scaled architecture, it might be interesting to come back on it.
 \end{itemize}
 
-\subsection{SOCK} 
+\subsection{SOCK} \label{subsec-sock}
 \paragraph{}"Sock (roughly for serverless-optimized containers), [is] a special-purpose container system with two goals: (1) \textit{low-latency invocation} for Python handlers that import librairies and (2) \textit{efficient sandbox initialization} so that individual workers can achive high ready-state throughput." \cite{oakes2018sock}  The final product created here isn't really something we could use for INGInious, it is a serverless solution (based on the Lambda model), targeting specifically python applications.  Though, in the process of creating this solution, they started from containers and deconstructed their perfromances, indentifying their bottlenecks.  And from this we can take those things:
 \begin{itemize}
 \renewcommand\labelitemi{--}
@@ -72,8 +72,21 @@ The main advantages of Docker are its simplicity of use, its production-grade qu
 
 Here bellow are presented some lightweight virtualization solutions.
 
+\subsection{LightVM} 
+\paragraph{}LigthVM is complete redesign of Xen's toolstack which tried to bring some container's characteristics to VMs.  Such as fast instantiation (small startup time) and high instance density capability (high number of instances running in parallel on the same machine).\cite{manco2017my}  Xen is a Type-1\footnote{A Type-1 hypervisor is an hypervisor that runs on a bare-metal machine, whithout additional host.} hypervisor presented in 2003 with really low virtualization overheads and high hosting capacity, allowing a machine to host up to a 100 guest OS.\cite{barham2003xen}  
+\paragraph{}They achieve such container's like performances by:
+\begin{itemize}
+\renewcommand\labelitemi{--}
+  \item reducing the image size and the memory footprint of virtual machines.  They do so by including in the VM only what is necessary to the application that is meant to be executed in it.
+  \item introducing noxs (no XenStore), a new implementation of Xen, without XenStore (which was a real bottleneck for fast instantiation of multiple VMs).
+  \item splitting the Xen's toolstack into what can be run before the VM creation and what as to be done during it.  Allowing to pre-initialize VMs.
+  \item replacing the Hotplug Script by xendevd, a binary deamon that can execute pre-defined setup more efficiently.
+\end{itemize}
+
+\paragraph{}They present four use cases with this solution, one of them beeing more intreresting for us: lightweight computation services, for which they rely on Minipython unikernel, to run computations written in Python, as a Faas could propose to do.  This would still be hard to use for INGInious, for the same reason as for SOCK (§\ref{subsec-sock}).
+
 \subsection{Firecracker}
 \subsection{Kata Containers}
-\subsection{LightVM} \cite{manco2017my}
+
 
 \section{Summary}
