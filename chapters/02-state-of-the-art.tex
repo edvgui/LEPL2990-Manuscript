@@ -46,7 +46,7 @@ Here bellow are presented some containerization solutions.
 The main advantages of Docker are its simplicity of use, its production-grade quality, the huge fleet of ready-to-run containers publicly available and a lot of useful tools (like \texttt{docker-compose} that come along with it).  This is the solution currently used by INGInious.
 
 \subsection{Podman}
-\paragraph{}"Podman is a daemonless container engine for developing, managing, and running OCI Containers on your Linux System."\cite{podman}  Podman present itself as a viable true alternative to Docker.  Its main difference is the fact that it runs daemonless, it runs containers as child processes, it isn't therefore based on containerd as docker is.  It can also manage pods, which are groups of containers deployed on the same machine.  Podman is an Open-Source project, and is still growing a lot, the latest version at this day (2020-02-28) is v1.8.0, released 21 days ago, and already 287 commits have been done since then!
+\paragraph{}"Podman is a daemonless container engine for developing, managing, and running OCI\cite{oci} Containers on your Linux System."\cite{podman}  Podman present itself as a viable true alternative to Docker.  Its main difference is the fact that it runs daemonless, it runs containers as child processes, it isn't therefore based on containerd as docker is.  It can also manage pods, which are groups of containers deployed on the same machine.  Podman is an Open-Source project, and is still growing a lot, the latest version at this day (2020-02-28) is v1.8.0, released 21 days ago, and already 287 commits have been done since then!
 
 \subsection{LXC}
 \paragraph{}"LXC is a userspace interface for the Linux kernel containment features."\cite{lxc}  This solution is developed and maintained by Canonial Ltd.  Docker used to be based on LXC until it created its own execution environment.  The main difference between LXC and Docker is that LXC launches a complete Linux init for each new container, while Docker will only launch a service, the application, in the container.
@@ -89,6 +89,14 @@ Here bellow are presented some lightweight virtualization solutions.
 \paragraph{} Firecracker is a new VMM (hypervisor) created specifically for serverless and containers applications.  \cite{agachefirecracker}  This is a solution provided by AWS, that very recently got deployed for two of their web services: Lambda (Faas) and Fargate (Paas).  We are basically getting here the good isolation of virtual machines and nearly as good performances and low overhead of containers.  Firecracker is based on KVM and provides minimal virtual machines (MicroVMs).  The configuration is done through a REST API.  Device emulation is available for disks, networking and serial console.  Network can be limited and so can disk throughput and request rate.  If proven to be easily usable in INGInious case, this would provide a better alternative to Docker regarding security.
 
 \subsection{Kata Containers}
-
+\paragraph{}"Kata Containers is an open source container runtime, building lightweight virtual machines that seamlessly plug into the containers ecosystem." \cite{kata}  They put forward four features of their solution:
+\begin{itemize}
+\renewcommand\labelitemi{--}
+  \item \textbf{Security}: Thanks to their virtualization solution, each runtime has its own kernel, with real network, i/o and memory isolation.
+  \item \textbf{Compatibility}:  They support industry standarts, as the OCI\cite{oci} and legacy virtualization technologies.
+  \item \textbf{Performance}:  Their performances are consistent with classical containerization solutions.
+  \item \textbf{Simplicity}:  They eliminate the need to have a virtual machine dedicated to host containers.  This is not really something for us though, as we still need to run INGInious on the host VM.
+\end{itemize}
+Same as for Firecracker, if proven to be easily usable in INGInious case, this would provide a better alternative to Docker regarding security.
 
 \section{Summary}
