@@ -85,7 +85,9 @@ Here bellow are presented some lightweight virtualization solutions.
 
 \paragraph{}They present four use cases with this solution, one of them beeing more intreresting for us: lightweight computation services, for which they rely on Minipython unikernel, to run computations written in Python, as a Faas could propose to do.  This would still be hard to use for INGInious, for the same reason as for SOCK (§\ref{subsec-sock}).
 
-\subsection{Firecracker}
+\subsection{Firecracker} 
+\paragraph{} Firecracker is a new VMM (hypervisor) created specifically for serverless and containers applications.  \cite{agachefirecracker}  This is a solution provided by AWS, that very recently got deployed for two of their web services: Lambda (Faas) and Fargate (Paas).  We are basically getting here the good isolation of virtual machines and nearly as good performances and low overhead of containers.  Firecracker is based on KVM and provides minimal virtual machines (MicroVMs).  The configuration is done through a REST API.  Device emulation is available for disks, networking and serial console.  Network can be limited and so can disk throughput and request rate.  If proven to be easily usable in INGInious case, this would provide a better alternative to Docker regarding security.
+
 \subsection{Kata Containers}
 
 
