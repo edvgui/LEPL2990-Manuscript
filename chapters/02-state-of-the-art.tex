@@ -60,7 +60,7 @@ The main advantages of Docker are its simplicity of use, its production-grade qu
 \end{itemize}
 
 \subsection{SOCK} 
-\paragraph{}"Sock (roughly for serverless-optimized containers), [is] a special-purpose container system with two goals: (1) \textit{low-latency invocation} for Python handlers that import librairies and (2) \textit{efficient sandbox initialization} so that individual workers can achive high ready-state throughput." \cite{oakes2018sock}  The first goal isn't really interesting for us as our use case is much wider than executing Python scripts.  The second one might interest us more.  From their research we can take those things:
+\paragraph{}"Sock (roughly for serverless-optimized containers), [is] a special-purpose container system with two goals: (1) \textit{low-latency invocation} for Python handlers that import librairies and (2) \textit{efficient sandbox initialization} so that individual workers can achive high ready-state throughput." \cite{oakes2018sock}  The final product created here isn't really something we could use for INGInious, it is a serverless solution (based on the Lambda model), targeting specifically python applications.  Though, in the process of creating this solution, they started from containers and deconstructed their perfromances, indentifying their bottlenecks.  And from this we can take those things:
 \begin{itemize}
 \renewcommand\labelitemi{--}
   \item Bond mounting is twice as fast as AUFS.  Even though AUFS (used by Docker) as a usefull Copy-on-write capability, we don't need to write to most of our files in our case, so using a read-only bind mounting for those files could allow us to avoid copying all file before startup, while still beeing able to edit the one with want to.
