@@ -100,3 +100,45 @@ Here bellow are presented some lightweight virtualization solutions.
 Same as for Firecracker, if proven to be easily usable in INGInious case, this would provide a better alternative to Docker regarding security.
 
 \section{Summary}
+\paragraph{}In this section, on Table \ref{tab:summary}, are quickly reminded the several solutions we explored in this chapter, along with some interesting infos about them.
+\begin{table}[!h]
+
+  \begin{center}
+    \begin{tabular}{|p{.2\textwidth}|p{.1\textwidth}|p{.1\textwidth}|p{.1\textwidth}|p{.1\textwidth}|p{.1\textwidth}|p{.1\textwidth}|}
+       \hline
+       \textbf{Name} & \textbf{Pub.} & \textbf{Update} & \textbf{Open-Source} & \textbf{Pot. Sol.} & \textbf{Com.} & \textbf{Isol.} \\
+       \hline
+       Docker & 2013 & 2020 & Yes & Yes & Yes & Cont. \\
+       \hline
+       Podman & 2018 & 2020 & Yes & Yes & Yes & Cont. \\
+       \hline
+       LXC & 2014 & 2019 & Yes & Yes & Yes & Cont. \\
+       \hline
+       SAND & 2018 & ? & ? & No & No & Cont. \\
+       \hline
+       SOCK & 2018 & ? & ? & No & No & Cont. or Runt. \\
+       \hline
+       LigthVM & 2017 & 2017 & Yes & No & No & Virt. \\
+       \hline
+       Firecracker & 2019 & 2020 & Yes & Yes & Yes & Virt.\\
+       \hline
+       Kata cont. & 2019 & 2020 & Yes & Yes & Yes & Virt. \\
+       \hline
+    \end{tabular}
+  \end{center}
+  \caption{Summary table of the different solutions explored in this chapter.}
+  \label{tab:summary}
+\end{table}
+\paragraph{}\textbf{Caption}: 
+\begin{itemize}
+  \item \textit{Name}: The name of the project.
+  \item \textit{Pub.}: The first publication year of the project.
+  \item \textit{Update}: The last update year of the project.
+  \item \textit{Open-source}: If the project is open-source.
+  \item \textit{Pot. Sol.}: If the project could be a solution in our case.
+  \item \textit{Com.}: If the project is a "commercial grade" solution.
+  \item \textit{Isol.}: The type of isolation used in the project.
+  \item \textit{Cont.}: Isolation by containerization.
+  \item \textit{Virt.}: Isolation by virtualization.
+  \item \textit{Runt.}: Isolation by the runtime of the application.
+\end{itemize}
