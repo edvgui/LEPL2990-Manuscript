@@ -99,6 +99,8 @@ Here bellow are presented some lightweight virtualization solutions.
 \end{itemize}
 Same as for Firecracker, if proven to be easily usable in INGInious case, this would provide a better alternative to Docker regarding security.
 
+Note that as it is only a container \textbf{runtime}, it couldn't replace completely Docker on its own, it would be more a replacement for containerd, the current container runtime of Docker.  Kata Containers actually even proposes to use Docker to manage its runtime.
+
 \section{Summary}
 \paragraph{}In this section, on Table \ref{tab:summary}, are quickly reminded the several solutions we explored in this chapter, along with some interesting infos about them.
 \begin{table}[!h]
