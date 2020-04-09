@@ -37,7 +37,7 @@ In this chapter I will present how things are today in the field of containeriza
 \paragraph{}When a Linux machine starts, it initiate one namespace of each type in which all the processes run.  The processes can then choose to create and switch of namespaces.
 
 \section{Control groups}
-% TODO
+Control groups are a feature of the Linux kernel that allows to limit and control the resources allocated to some processes.  You can for example control the cpu usage, the memory consumption, the io...  Recently (since kernel 4.5) a new version of cgroups (cgroups v2) appeared, which comes to tackle the flaws of the original implementation, while keeping all of its functionalities.  Though the adoption of the new version is a process, and takes times, and still now many applications use the original version of cgroup (like Docker).
 
 \section{Containerization solutions}
 
