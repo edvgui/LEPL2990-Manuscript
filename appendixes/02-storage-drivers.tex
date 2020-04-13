@@ -1,0 +1,12 @@
+\chapter{Storage drivers}
+When it comes to handle a container file system, different solutions can be used.  The goal of each is to provide the most efficient writable root directory (\texttt{/}) for each container, but keeping each container inaffected by the modifification done in the other containers.
+
+\paragraph{}In order to do so, three main strategies can be used:
+\begin{itemize}
+\renewcommand\labelitemi{--}
+  \item \textbf{Deep copy}: for each container, the whole image is copied during the creation of the container.  This is simple, but gets terribly slow as the file system size increases.
+  \item \textbf{File based copy on write}: for each container, will be copied only the files that are edited during the container life cycle.  This is more complex, but get more efficient as the container's size grows.
+  \item \textbf{Block based copy on write}: for each container, will be copied only the blocks (in the filesystem) that are edited during the container life cycle.  This is even more complex, but get more efficient as some small part of big files are edited.
+\end{itemize}
+
+\paragraph{}Containers are a specific kind of workload in the sense that many information, data, is redundant in different containers.  For example, for a simple application, we could use several containers with different responsabilities and tools embedded in it, but all based on the same Alpine image.  This brought a new space problem, as we don't want to avoid duplicating too much data.  In order to face this, union file systems are used, along with layered container images.  This basically means that different container images but with the same basis, will actually share this same basis, avoiding the need to duplicate it.
