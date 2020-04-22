@@ -2,6 +2,11 @@
 
 In this chapter I will present some of the work that has already been done in the field of containerization, and show what we can take from it.  I will then explain why my work adds up something to those previous research.
 
+\section{Container and Virtual Machine performances}
+As said previously, Virtual Machines have been kept away from the PaaS world, because of the greater overhead that Virtualization has on booting time and resources consumptions of the isolated system created.  This paper \cite{dua2014virtualization} made a detailed point about it back in 2014, emphasizing on three points that needed to be improved for the next generation of containers: Security, OS Independence and Standardization.  The last one meaning that containers runtime should establish some common requirements, come up with a common container format.  We have seen this appear since then, under the OCI (Open Container Initiative) specifications.
+
+\paragraph{}But recently things started to change, some new solutions seem to have the advantage of both sides, the isolation of a VM and the portability and lightness of a Container.  This is why some VM-based solution are presented here.  Even though VMs do not come from the same domain of application as Containers, and even though in the case of INGInious, Containers were 5 years ago the obvious choice, it might now be time to reconsider it.
+
 \section{SAND} 
 \paragraph{}SAND\cite{akkus2018sand} aims at improving the performance of serverless computing with two techniques: application-level sandboxing, and a hierarchical message bus:
 \begin{itemize}
