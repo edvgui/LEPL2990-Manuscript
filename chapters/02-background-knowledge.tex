@@ -63,7 +63,7 @@ When it comes to handle a container file system, different solutions can be used
 \begin{itemize}
 \renewcommand\labelitemi{--}
   \item \textbf{BTRFS}, presented in 2013, \cite{rodeh2013btrfs} is a general purpose file system, based on copy-on-write and with efficient snapshots capabilities and strong data integrity.
-  \item \textbf{zFS} is quite similar to BTRFS (but was there before), but handles some mechanisms differently, like the management of blocks (blocks vs. extends), snapshots, ...  It also support deduplication, which can be usefull for system were a lot of data is redundant and disk space is valuable.
+  \item \textbf{zFS} is quite similar to BTRFS (but was there before), but handles some mechanisms differently, like the management of blocks (blocks vs. extends\footnote{zFS can have blocks to up to 128KB, while BTRFS will only use the extend strategy (point to the next block).}), snapshots (birth-times vs reference-counting\footnote{When doing snapshots, zFS will store on the block the time at wich a new use of the block has been added, while Btrfs handles it with a reference-counting mechanism.}), ...  It also support deduplication, which can be usefull for system were a lot of data is redundant and disk space is valuable.
   \item \textbf{xFS} is a network file system (as zFS and BTRFS), this means that it can manage several drives in different locations, connected over the network in one storage unit.  It manages to deliver better performances and availability than other similar solutions at the time it was created (1993).\cite{wang1993xfs}  It has no focus on any copy-on-write mechanism as the first two though.
   \item \textbf{ext4} was meant to be the replacement to ext3, as the "Linux Filesystem" when it was presented in 2007. \cite{mathur2007new}  It aims at providing a good balance between scalability, reliability, performance and stability.  It doesn't provide any of the fancy feature of the previous file system.
 \end{itemize}
@@ -75,15 +75,15 @@ The Table \ref{tab:storage-drivers} present a short summary of the different sto
       \hline
       \textbf{Tool} & \textbf{Storage driver} & \textbf{C-o-W}\tablefootnote{Copy-on-write} & \textbf{FS}\tablefootnote{Backing file system}\\
       \hline
-      Docker/Podman & \texttt{overlay2} & yes & ext4, xFS \\
-      Docker/Podman & \texttt{aufs} & yes & ext4, xFS \\
-      Docker/Podman & \texttt{devicemapper} & yes & direct-lvm\tablefootnote{Note that this is a logical volume manager, not a file system, which uses in our case the xFS file system, this is a block-based CoW} \\
-      Docker/Podman & \texttt{btrfs} & yes & BTRFS\\
-      Docker/Podman & \texttt{zfs} & yes & zFS\\
+      Docker/Podman & \texttt{overlay2} & file based & ext4, xFS \\
+      Docker/Podman & \texttt{aufs} & file based & ext4, xFS \\
+      Docker/Podman & \texttt{devicemapper} & block based & direct-lvm\tablefootnote{Note that this is a logical volume manager, not a file system, which uses in our case the xFS file system} \\
+      Docker/Podman & \texttt{btrfs} & block based & BTRFS\\
+      Docker/Podman & \texttt{zfs} & block based & zFS\\
       Docker/Podman & \texttt{vfs} & no & any \\
       \hline
-      LXD & \texttt{Btrfs} & yes & BTRFS\\
-      LXD & \texttt{ZFS} & yes & zFS\\
+      LXD & \texttt{Btrfs} & block based & BTRFS\\
+      LXD & \texttt{ZFS} & block based & zFS\\
       LXD & \texttt{LVM} & yes & ext4\\
       LXD & \texttt{Directory} & no & any \\
       \hline
@@ -119,7 +119,7 @@ The main advantages of Docker are its simplicity of use, its production-grade qu
 
 \paragraph{}"\textbf{LXC} is a userspace interface for the Linux kernel containment features."\cite{lxc}  This solution is developed and maintained by Canonial Ltd.  Docker used to be based on LXC until it created its own execution environment.  LXC came out recently with a new solution; LXD, which offer about the same things as Docker does.  A bunch of ready to run images publicly available, and a nice command line interface to interact with containers.  The only missing feature of LXC compare to Docker, regadering our use case, is the possibility to launch a container with a command, and stop it when it is finished.  LXC actually start a complete init process for each container, in which you can then come and execute your command.
 
-\paragraph{}\textbf{Kata Containers} is not another container manager.  It is an OCI compatible runtime.  With the specificity that it doesn't run mainstream containers as \texttt{runc}, but actually lightweight virtual machines, with Qemu (originaly) or Firecracker as hypervisor.  Those two currently available hypervisor are not really equivalent though, as the original one has more features (like devices assignment) and the second one should be faster to boot.
+\paragraph{}\textbf{Kata Containers} is not another container manager.  It is an OCI compatible runtime.  With the specificity that it doesn't run mainstream containers as \texttt{runc}, but actually lightweight virtual machines, using KVM virtualisation and with Qemu (originally), Firecracker or Cloud Hypervisor (still in its early days) as hypervisor.  Those two first currently available hypervisor are not really equivalent though, as the original one has more features (like devices assignment) and the second one has lower memory footprint, smaller attack surface, and a shortest boot time.
 They put forward four features of their solution:
 \begin{itemize}
 \renewcommand\labelitemi{--}
