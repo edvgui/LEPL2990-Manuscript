@@ -9,18 +9,17 @@ As said previously, Virtual Machines have been kept away from the PaaS world, be
 
 \section{SAND} 
 \paragraph{}SAND\cite{akkus2018sand} aims at improving the performance of serverless computing with two techniques: application-level sandboxing, and a hierarchical message bus:
-\begin{itemize}
-\renewcommand\labelitemi{--}
-  \item \textbf{Application Sandboxing}: The key idea here is to differentiate multiple executions of different functions with multiple execution of a same function.  In the first case, as usual, a new container is launched on the new function demand and the function is executed inside of it.  In the second case, instead of lauching a new container with exactly the same configuration as an already running one, we only fork a process inside de running container to deal with the new demand, which is much faster than creating a new container.  The problem in our case, is that we loose the isolation between student code execution, which is not desirable.
-  \item \textbf{Hierarchical Message Queuing}: The goal to this is to facilitate communication between functions that interact with one another (i.e. the output of a function is the input of another one).  To do so they use a two-level communication bus: global and local.  Global means that the communication is made between different functions on different hosts, while local means different functions on the same host.  As accessing the local bus is much faster than the global one, it can decrease latency for functions on the same host.  % In our case, as INGInious is still running on a single host, this shouldn't improve our performances that much.  But in a near future where INGInious get a new horizaontally scaled architecture, it might be interesting to come back on it.
-\end{itemize}
+
+\paragraph{}\textbf{Application Sandboxing}: The key idea here is to differentiate multiple executions of different functions with multiple execution of a same function.  In the first case, as usual, a new container is launched on the new function demand and the function is executed inside of it.  In the second case, instead of lauching a new container with exactly the same configuration as an already running one, we only fork a process inside de running container to deal with the new demand, which is much faster than creating a new container.  The problem in our case, is that we loose the isolation between student code execution, which is not desirable.
+\paragraph{}\textbf{Hierarchical Message Queuing}: The goal to this is to facilitate communication between functions that interact with one another (i.e. the output of a function is the input of another one).  To do so they use a two-level communication bus: global and local.  Global means that the communication is made between different functions on different hosts, while local means different functions on the same host.  As accessing the local bus is much faster than the global one, it can decrease latency for functions on the same host.  For now in the case of INGInious, student and teacher container always run on the same host and communicate though the mean of file descriptors.  So this is still not something for us.  % In our case, as INGInious is still running on a single host, this shouldn't improve our performances that much.  But in a near future where INGInious get a new horizaontally scaled architecture, it might be interesting to come back on it.
+
 
 \section{SOCK} \label{subsec-sock}
 \paragraph{}"Sock (roughly for serverless-optimized containers), [is] a special-purpose container system with two goals: (1) \textit{low-latency invocation} for Python handlers that import librairies and (2) \textit{efficient sandbox initialization} so that individual workers can achive high ready-state throughput." \cite{oakes2018sock}  The final product created here isn't really something we could use for INGInious, it is a serverless solution (based on the Lambda model), targeting specifically python applications.  Though, in the process of creating this solution, they started from containers and deconstructed their perfromances, indentifying their bottlenecks.  And from this we can take those things:
 \begin{itemize}
 \renewcommand\labelitemi{--}
-  \item Bind mounting is twice as fast as AUFS.  Even though AUFS (used by Docker) as a usefull Copy-on-write capability, we don't need to write to most of our files in our case, so using a read-only bind mounting for those files could allow us to avoid copying all file before startup, while still beeing able to edit the one with want to.
-  \item Network namespaces creation and cleanup are costly, due to a single lock shared across all network namespaces.  We might gain some performances buy not adding network interfaces to containers that don't need it.
+  \item Bind mounting is twice as fast as AUFS.  Even though AUFS (used by Docker) as a usefull Copy-on-write capability, we don't need to write to most of our files in our case, so using a read-only bind mounting for those files could allow us to avoid copying all file before startup, while still beeing able to edit the one we want to.
+  \item Network namespaces creation and cleanup are costly, due to a single lock shared across all network namespaces.  We might gain some performances buy not adding network interfaces to containers that don't need it.  This is actually already done by the docker agent of INGInious.
   \item Reusing a cgroup is at least twice as fast as creating a new one each time.  We could keep a pool of initialized cgroups, and only change the current container it controls.
 \end{itemize}
 
@@ -38,7 +37,7 @@ As said previously, Virtual Machines have been kept away from the PaaS world, be
 \paragraph{}They present four use cases with this solution, one of them beeing more intreresting for us: lightweight computation services, for which they rely on Minipython unikernel, to run computations written in Python, as a Faas could propose to do.  This would still be hard to use for INGInious, for the same reason as for SOCK (§\ref{subsec-sock}).
 
 \section{Firecracker} 
-\paragraph{} Firecracker is a new VMM (hypervisor) created specifically for serverless and containers applications.  \cite{agachefirecracker}  This is a solution provided by AWS, that very recently got deployed for two of their web services: Lambda (Faas) and Fargate (Paas).  We are basically getting here the good isolation of virtual machines and nearly as good performances and low overhead of containers.  Firecracker is based on KVM and provides minimal virtual machines (MicroVMs).  The configuration is done through a REST API.  Device emulation is available for disks, networking and serial console.  Network can be limited and so can disk throughput and request rate.  If proven to be easily usable in INGInious case, this would provide a better alternative to Docker regarding security.
+\paragraph{} Firecracker is a new VMM (hypervisor) created specifically for serverless and containers applications.  \cite{agachefirecracker}  This is a solution provided by AWS, that very recently got deployed for two of their web services: Lambda (Faas) and Fargate (Paas).  We are basically getting here the good isolation of virtual machines and nearly as good performances and low overhead of containers.  Firecracker is based on KVM and provides minimal virtual machines (MicroVMs).  The configuration is done through a REST API.  Device emulation is available for disks, networking and serial console.  Network can be limited and so can disk throughput and request rate.  If proven to be easily usable in INGInious case, this would provide a better alternative to classical containerisation regarding security.
 
 \section{Summary}
 \paragraph{}In this section, on Table \ref{tab:summary}, are quickly reminded the several solutions we explored in this chapter, along with some interesting infos about them.
@@ -64,6 +63,7 @@ As said previously, Virtual Machines have been kept away from the PaaS world, be
 \end{table}
 \paragraph{}\textbf{Caption}: 
 \begin{itemize}
+\renewcommand\labelitemi{--}
   \item \textit{Name}: The name of the project.
   \item \textit{Pub.}: The first publication year of the project.
   \item \textit{Update}: The last update year of the project.
@@ -77,3 +77,11 @@ As said previously, Virtual Machines have been kept away from the PaaS world, be
 \end{itemize}
 
 \section{My master thesis}
+There is already been a huge amount of performance comparison done for the containerisation world, essentially comparing bare-metal machine to containers and VMs.  
+\begin{itemize}
+\renewcommand\labelitemi{--}
+  \item \textit{Performance evaluation of container-based virtualization for high performance computing environments}\cite{xavier2013performance} (2013): They compared a native experience to LXC containers, OpenVZ, VServer and Xen.  They showed that virtualisation (with Xen) was giving really poor performances compared to the others.
+  \item \textit{Performance overhead comparison between hypervisor and container based virtualization}\cite{li2017performance} (2017):  In this paper they showed that even though container-based virtualization (with Docker) is more lightweight than real virtualisation, its performances are not always better.  And they plan to compare it into more details later.
+  \item \textit{A performance comparison of container-based technologies for the cloud}\cite{kozhirbayev2017performance} (2017): They compared here two different containerization solutions (Docker and LXC) against the native experience with focus on CPU usage, memory consumption, network and I/O performances.
+\end{itemize}
+In short they all show that containers perform in general better than VMs and worse than a Physical machine.  What they don't compare is different containerisations solution with one another (or at least not all of them) and they don't focus on booting time.  This is the direction I will take in this report.  Trying to respond to the question: "What would be the most appropriate containerisation (or virtualisation) solution for INGInious use case?", or in other word, how to get the shortest instantiation time, along with the best isolation possible and as low overall performance overhead as we can get.
