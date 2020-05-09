@@ -1,5 +1,76 @@
 \chapter{Benchmark tool}
+In this chapter I will present the setup used to perform my measurements, the differents tests I made and the candidates solutions that are going to be compared with one another.
 
 \section{Setup}
+\subsection{Testing environment}
+
+\paragraph{}Originally, all of my tests where meant to be executed in a Virtual Machine, on my computer.  In a VM because this is currently the nature of the environnement where INGInious launches its container.  And on my computer, because it is  powerful enough for the modest load of tests that I am running for each solution.  Unfortunetly, the first setup I had didn't support nested virtualisation (which is required for Kata-based solutions), the second one was very unstable with it and I finally moved to the cloud, renting Azure VMs.  
+
+The early results that I could get where quite surprising though, showing really poor performances for Kata containers with Firecracker, and it turned out that Firecracker is not really meant to be running inside VMs (it can work, but not at its best).  I made then a last move, to an Intel NUC provided by the INGI department.  All the tests will then run on a bare-metal machine, no more nested virtualization problem at the horizon.
+
+The testing environment used for the final results presented in this work is an Intel NUC with the following configuration:\\
+\begin{tabular}{rl}
+
+  \textbf{processor} & Intel(R) Core(TM) i7-7567U CPU @ 3.50GHz \\
+  \textbf{memory} & 16GB \\
+  \textbf{main partition} & 2TB HDD \\
+  \textbf{additionnal storage} & 500GB SSD \\
+  \textbf{operation system} & Ubuntu 18.04.4 LTS \\
+  \textbf{linux kernel version} & 4.15.0-99-generic \\
+
+\end{tabular}
+\paragraph{}\textbf{Note about storage:} The main partition, on which the operating system is running, is a hard drive.  This will provide much lower IO performances than an SSD.  To be more in pair with the kind of performances we can get in the cloud, all the relevant data accessed and written during my tests will be stored on the additionnal disk (SSD).
+
+\subsection{Configuration of the environment}
+As a lot of different solutions are going to be tested, and all of them with their own requirements (sometimes conflicting with the ones of other solutions), some work has to be done to make it easier for someone to replicate them.  The configuration of the environnment is going to be done with Ansible\footnote{https://docs.ansible.com/} playbooks, with one playbook for each solution to test.
+
+All the different configurations allong with the tests they are required for and their corresponding playbook are presented in section \ref{subs:candidates}.
 
 \section{Tests}
+As we alreay said previously, time is an important aspect in the experience INGInious provides to its users.  The time for a task to be evaluated and the time before this task is evaluated.  In order to improve those two, we will focus in those tests on the booting time of containers and their IO handling (still related to the time overhead that some solution could have compared to another).  % TODO IO big files and IO lots of file
+
+While we are at it, we will also verify if some solutions handle network much poorly than others.  Each test done is presented in more details in section \ref{subs:experiments}.
+
+\subsection{Baseline}
+
+\subsection{Candidates}\label{subs:candidates}
+
+\begin{table}[!h]
+  \begin{center}
+    \begin{tabular}{|r|c|c|c|c|c|}
+      \hline
+      \textbf{\#} & \textbf{Cont. Mngr} & \textbf{Base Image} & \textbf{Storage driver} & \textbf{Ctrl grp} & \textbf{Runtime} \\ \hline \hline
+       1  & Docker & Alpine & overlay2 & cgroup & runc \\ \hline \hline
+       2  & Docker & Alpine & \textbf{aufs} & cgroup & runc \\ \hline
+       3  & Docker & Alpine & \textbf{devicemapper} & cgroup & runc \\ \hline
+       4  & Docker & Alpine & \textbf{btrfs} & cgroup & runc \\ \hline
+       5  & Docker & Alpine & \textbf{zfs} & cgroup & runc \\ \hline
+       6  & Docker & Alpine & \textbf{vfs} & cgroup & runc \\ \hline
+       7  & Docker & \textbf{Centos} & overlay2 & cgroup & runc \\ \hline
+       8  & Docker & Alpine & overlay2 & cgroup & \textbf{kata-qemu} \\ \hline
+       9  & Docker & Alpine & \textbf{devicemapper} & cgroup & \textbf{kata-qemu} \\ \hline
+       10 & Docker & Alpine & \textbf{devicemapper} & cgroup & \textbf{kata-fc} \\ \hline
+       11 & Docker & Alpine & overlay2 & cgroup & \textbf{crun} \\ \hline
+       12 & \textbf{Podman} & Alpine & overlay2 & \textbf{-} & runc \\ \hline
+       13 & \textbf{Podman} & Alpine & overlay2 & \textbf{cgroupv2} & \textbf{crun} \\ \hline
+       14 & \textbf{-} & Alpine & \textbf{-} & cgroup & runc \\ \hline
+       15 & \textbf{-} & Alpine & \textbf{-} & \textbf{cgroupv2} & \textbf{crun} \\ \hline
+       16 & \textbf{LXD} & Alpine & \textbf{btrfs} & cgroup & \textbf{LXC} \\ \hline
+       17 & \textbf{LXD} & Alpine & \textbf{zfs} & cgroup & \textbf{LXC} \\ \hline
+       18 & \textbf{LXD} & Alpine & \textbf{directory} & cgroup & \textbf{LXC} \\ \hline
+       19 & \textbf{LXD} & Alpine & \textbf{lvm} & cgroup & \textbf{LXC} \\ \hline
+    \end{tabular}
+  \end{center}
+  \caption{}
+  \label{tab:}
+\end{table}
+
+\subsection{Experiments} \label{subs:experiments}
+
+\subsubsection{Booting time}
+
+\subsubsection{Basic I/O performances}
+
+\subsubsection{Network setup time}
+
+\subsubsection{Ping response time}
