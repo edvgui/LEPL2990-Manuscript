@@ -41,20 +41,22 @@ A candidate solution is a combinaison of different elements, variabilities, choi
   \item \textbf{Control group}: \textit{cgroup} and \textit{cgroupv2}, there is no real choice to make here, cgroupv2 is the successor of cgroup, and should be used, when supported by the other element of the configuration.
   \item \textbf{Storage driver}: \textit{overlay}, \textit{aufs}, \textit{btrfs}, \textit{zfs}, \textit{vfs}, \textit{lvm}, those are the different strategies that can be used to manage the file system of the container.
   \item \textbf{Base container image}: \textit{Alpine} because it is the default choice when it comes to conceive containerized applications today and \textit{Centos} because it is the current choice made by INGInious.
+  \item \textbf{Rootless container}: Run the container without root priviledges, neither of the container runtime, the container manager and the processes running in the container are executed as root.  This feature has to be supported by the containter manager and the container runtime, and provide better security.
 \end{itemize}
 
 Though, we can not compose a candidate solution with one element of each category, randomly picked.  Some element of the solution might only be usable with some of the possibilities for a variability.  The different constraints that we have are listed here:
 \begin{itemize}
   \renewcommand\labelitemi{--}
   \item Docker doesn't support cgroupv2 yet (actually the support has to be added by containerd).
-  \item Podman doesn't support cgroup (v1).
   \item LXD doesn't support cgroupv2 yet.
   \item LXD only supports LXC as runtime, and LXC is only supported by LXD.
   \item LXD only supports btrfs, zfs, vfs (under the name of dir) and lvm as storage driver.
   \item Kata Container with Firecracker only supports devicemapper (lvm) as storage driver.
+  \item Zfs, lvm, aufs can not be used with rootless containers.
+  \item Cgroup (v1) can not be used with rootless containers.
 \end{itemize}
 
-The list of different candidate solution we can compare is presented in Table \ref{tab:candidates}.
+The list of different candidate solution we can compare is presented in Table \ref{tab:candidates}.  Each container will be launched with a CPU limitation of one single core, and memory limitation of 1GB.  This is more than enough for each test that will be done.  A network interface will be only added to the container if it needs it for the specific test.
 
 \begin{table}[!h]
   \begin{center}
@@ -107,14 +109,16 @@ In order to do this, each container will be running as first process a shell\foo
 This tests aims at determining the candidate solution that can provide a ready to run container the faster.  In order to measure this, a simple container composed of only the base image is created, in which the simple command \texttt{/bin/echo Hello World} is executed.  The best candidate would be the one that has the shortest creation and starting time ($t_{create} + t_{start}$).
 
 \subsubsection{Basic I/O performances}
-This tests aims at determining mostly the influence of the usage of each storage driver on the performances of an application that relies highly on it.  Two kind of tests are done here: big file read and write, and great amount of file read and write.  The best candidate solution would be the one to with the shortest creation, starting and execution time ($t_{create} + t_{start} + t_{exec}$).
+This tests aims at determining mostly the influence of the usage of each storage driver on the performances of an application that relies highly on it.  Four different tests are done here: big file read and write, and great amount of file read and write.  The best candidate solution would be the one to with the shortest creation, starting and execution time ($t_{create} + t_{start} + t_{exec}$).
 
-For the first one, five sqlite databases have been created, of five different size (about one order of magnitude appart from each other).  The read test will be doing a simple \texttt{select * from ...} on each table of the database.  The write test will be adding a copy of each table in the database (\texttt{create table ... as select * from ...}).
+For the first one, five sqlite databases have been created, of five different size (\texttt{151.6 kB}, \texttt{536.6 kB}, \texttt{2.6 MB}, \texttt{11.9 MB} and \texttt{111.6 MB}, about one order of magnitude appart from each other).  We use an sqlite database as everything will be stored in one file, and no deamon needs to be runnning, which reduces the performance cost of each solicitation to purely I/O (and eventually CPU, if the requests were to be complex, which is not our case here).
+The read test will do a select operation on each table of the database without any filter, displaying all of the table content.  The write test will duplicate each table in the database.  The database chosen as basis to generate all the presented one is \texttt{tpcc}\footnote{\href{https://relational.fit.cvut.cz/dataset/TPCC}{ttps://relational.fit.cvut.cz/dataset/TPCC}}, which a benchmark database, perfect for our case.  The biggest database used is an export from the tpcc database, the other ones are created by removing content of some tables from this same database.
 
-For the second one, five loads of small file have been created (10, 100, 1000, 10 000 and 100 000 2KB random files).  The read test will do a \texttt{cat} on each file, and redirect the output to \texttt{/dev/null}.  The write test will extract an archive (\texttt{tar}) containing all those files.
+For the second one, five loads of small file have been created (10, 100, 1000, 10 000 and 100 000 files).  The content of the file is alphanumeric, and completely random (no file should be a duplication of another one), each file is $2048$ character (and bytes) long.  This represent the best the kind of file a user could access, to read or write content from/to it. 
+The read test will load the content of each file in memory, then discard it and move to the next one.  The write test will extract an uncompressed archive (\texttt{tar}) containing all those files.
 
 \subsubsection{Network setup time}
-This tests aims also at determining the candidate solution that can setup a ready du run container the fastest, but with the added complexity of adding a network interface, and mapped ports, so that the host machine can send requests to a nightweight http server running in the container.  We take one more time measurement here, the time at wich we received the first response at the http requests we send to our server ($t_r$).  The best candidate would be the one that has the sortest delay before this response ($t_{create} + t_{start} + t_{exec} + t_{response}$, with $t_{response}=t_r - t_e$).
+This tests aims also at determining the candidate solution that can setup a ready du run container the fastest, but with the added complexity of adding a network interface, and mapped ports, so that the host machine can send requests to an http server running inside of the container.  I choosed a \texttt{lighttpd} server, for its lightness, and its wide use in container application.  We take one more time measurement here, the time at which we received the first response at the http requests we send to our server ($t_r$).  The best candidate would be the one that has the shortest delay before this response ($t_{create} + t_{start} + t_{exec} + t_{response}$, with $t_{response}=t_r - t_e$).  The execution time corresponds to the execution of the command that launches the server as detached process.
 
 \subsubsection{Ping response time}
-This really simple test aims at detremining if some solution provide a much weaker network solution to the container than the others.  We simply perform a ping request to \texttt{1.1.1.1}, and compare the response time we get for each solution.  The best solution would be the one with the shortest ping response time.
+This really simple test aims at determining if some solution provide a much weaker network solution to the container than the others.  We simply perform a ping request to \texttt{1.1.1.1}, and compare the response time we get for each solution.  The best solution would be the one with the shortest ping response time.
