@@ -39,54 +39,87 @@ A candidate solution is a combinaison of different elements, variabilities, choi
   \item \textbf{Container manager}: \textit{Docker}, \textit{Podman}, \textit{LXD}, those are the different user friendly solution that can be used to manage container, and that we will compare here.
   \item \textbf{Container runtime}: \textit{runc}, \textit{crun}, \textit{LXC}, \textit{Kata containers} (Qemu or Firecracker), the (less user-friendly) container runtimes, taking care of all the isolation that a container require.
   \item \textbf{Control group}: \textit{cgroup} and \textit{cgroupv2}, there is no real choice to make here, cgroupv2 is the successor of cgroup, and should be used, when supported by the other element of the configuration.
-  \item \textbf{Storage driver}: \textit{overlay}, \textit{aufs}, \textit{btrfs}, \textit{zfs}, \textit{vfs}, \textit{lvm}, those are the different strategies that can be used to manage the file system of the container.
+  \item \textbf{Storage driver}: \textit{aufs}, \textit{btrfs}, \textit{devicemapper}, \textit{directory}, \textit{overlay}, \textit{vfs}, \textit{zfs}, \textit{lvm}, those are the different strategies that can be used to manage the file system of the container.
   \item \textbf{Base container image}: \textit{Alpine} because it is the default choice when it comes to conceive containerized applications today and \textit{Centos} because it is the current choice made by INGInious.
-  \item \textbf{Rootless container}: Run the container without root priviledges, neither of the container runtime, the container manager and the processes running in the container are executed as root.  This feature has to be supported by the containter manager and the container runtime, and provide better security.
+  \item \textbf{Rootless container}: Run the container in rootless mode.
 \end{itemize}
 
 Though, we can not compose a candidate solution with one element of each category, randomly picked.  Some element of the solution might only be usable with some of the possibilities for a variability.  The different constraints that we have are listed here:
 \begin{itemize}
   \renewcommand\labelitemi{--}
   \item Docker doesn't support cgroupv2 yet (actually the support has to be added by containerd).
+  \item Docker only supports aufs (deprecated), btrfs, devicemapper (until Docker 18.06), overlay, vfs, zfs as storage driver.
   \item LXD doesn't support cgroupv2 yet.
   \item LXD only supports LXC as runtime, and LXC is only supported by LXD.
-  \item LXD only supports btrfs, zfs, vfs (under the name of dir) and lvm as storage driver.
-  \item Kata Container with Firecracker only supports devicemapper (lvm) as storage driver.
-  \item Zfs, lvm, aufs can not be used with rootless containers.
-  \item Cgroup (v1) can not be used with rootless containers.
+  \item LXD only supports btrfs, zfs, directory (dir) and lvm as storage driver.
+  \item Kata Container with Firecracker only supports devicemapper as storage driver.
+  \item zfs, lvm, aufs can not be used with rootless containers.
+  \item cgroup (v1) can not be used with rootless containers.
+  \item runc doesn't support cgroupv2 yet.
+  % TODO Check if kata-runtime is compatible with cgroupv2
 \end{itemize}
 
-The list of different candidate solution we can compare is presented in Table \ref{tab:candidates}.  Each container will be launched with a CPU limitation of one single core, and memory limitation of 1GB.  This is more than enough for each test that will be done.  A network interface will be only added to the container if it needs it for the specific test.
+The list of different candidate solution we can compare is presented in tables below.  Each container will be launched with a CPU limitation of one single core, and memory limitation of 1GB.  This is more than enough for each test that will be done.  A network interface will be only added to the container if it needs it for the specific test.\\\\
 
-\begin{table}[!h]
-  \begin{center}
-    \begin{tabular}{|r|c|c|c|c|c|}
-      \hline
-      \textbf{\#} & \textbf{Cont. Mngr} & \textbf{Base Image} & \textbf{Storage driver} & \textbf{Ctrl grp} & \textbf{Runtime} \\ \hline \hline
-       1  & Docker & Alpine & overlay2 & cgroup & runc \\ \hline \hline
-       2  & Docker & Alpine & \textbf{aufs} & cgroup & runc \\ \hline
-       3  & Docker & Alpine & \textbf{devicemapper} & cgroup & runc \\ \hline
-       4  & Docker & Alpine & \textbf{btrfs} & cgroup & runc \\ \hline
-       5  & Docker & Alpine & \textbf{zfs} & cgroup & runc \\ \hline
-       6  & Docker & Alpine & \textbf{vfs} & cgroup & runc \\ \hline
-       7  & Docker & \textbf{Centos} & overlay2 & cgroup & runc \\ \hline
-       8  & Docker & Alpine & overlay2 & cgroup & \textbf{kata-qemu} \\ \hline
-       9  & Docker & Alpine & \textbf{devicemapper} & cgroup & \textbf{kata-qemu} \\ \hline
-       10 & Docker & Alpine & \textbf{devicemapper} & cgroup & \textbf{kata-fc} \\ \hline
-       11 & Docker & Alpine & overlay2 & cgroup & \textbf{crun} \\ \hline
-       12 & \textbf{Podman} & Alpine & overlay2 & \textbf{-} & runc \\ \hline
-       13 & \textbf{Podman} & Alpine & overlay2 & \textbf{cgroupv2} & \textbf{crun} \\ \hline
-       14 & \textbf{-} & Alpine & \textbf{-} & cgroup & runc \\ \hline
-       15 & \textbf{-} & Alpine & \textbf{-} & \textbf{cgroupv2} & \textbf{crun} \\ \hline
-       16 & \textbf{LXD} & Alpine & \textbf{btrfs} & cgroup & \textbf{LXC} \\ \hline
-       17 & \textbf{LXD} & Alpine & \textbf{zfs} & cgroup & \textbf{LXC} \\ \hline
-       18 & \textbf{LXD} & Alpine & \textbf{directory} & cgroup & \textbf{LXC} \\ \hline
-       19 & \textbf{LXD} & Alpine & \textbf{lvm} & cgroup & \textbf{LXC} \\ \hline
-    \end{tabular}
-  \end{center}
-  \caption{}
-  \label{tab:candidates}
-\end{table}
+\newcounter{rowno}
+\setcounter{rowno}{0}
+\begin{longtable}{|>{\stepcounter{rowno}\therowno}r|c|c|c|c|c|c|}
+  \hline
+  \multicolumn{1}{|r|}{\#} & \textbf{Manager} & \textbf{Image} & \textbf{Storage} & \textbf{Cgroup} & \textbf{Runtime} & \textbf{Rootless} \\ \hline \hline
+   & Docker & Alpine & aufs          & v1 & runc       & No\\ \hline
+   & Docker & Alpine & btrfs         & v1 & runc       & No\\ \hline
+   & Docker & Alpine & devicemapper  & v1 & runc       & No\\ \hline
+   & Docker & Alpine & overlay2      & v1 & runc       & No\\ \hline
+   & Docker & Alpine & vfs           & v1 & runc       & No\\ \hline
+   & Docker & Alpine & zfs           & v1 & runc       & No\\ \hline
+   & Docker & Alpine & aufs          & v1 & crun       & No\\ \hline
+   & Docker & Alpine & btrfs         & v1 & crun       & No\\ \hline
+   & Docker & Alpine & devicemapper  & v1 & crun       & No\\ \hline
+   & Docker & Alpine & overlay2      & v1 & crun       & No\\ \hline
+   & Docker & Alpine & vfs           & v1 & crun       & No\\ \hline
+   & Docker & Alpine & zfs           & v1 & crun       & No\\ \hline
+   & Docker & Alpine & aufs          & v1 & kata-qemu  & No\\ \hline
+   & Docker & Alpine & btrfs         & v1 & kata-qemu  & No\\ \hline
+   & Docker & Alpine & devicemapper  & v1 & kata-qemu  & No\\ \hline
+   & Docker & Alpine & overlay2      & v1 & kata-qemu  & No\\ \hline
+   & Docker & Alpine & vfs           & v1 & kata-qemu  & No\\ \hline
+   & Docker & Alpine & zfs           & v1 & kata-qemu  & No\\ \hline
+   & Docker & Alpine & devicemapper  & v1 & kata-fc    & No\\ \hline
+   & Docker & Centos & aufs          & v1 & runc       & No\\ \hline
+   & Docker & Centos & btrfs         & v1 & runc       & No\\ \hline
+   & Docker & Centos & devicemapper  & v1 & runc       & No\\ \hline
+   & Docker & Centos & overlay2      & v1 & runc       & No\\ \hline
+   & Docker & Centos & vfs           & v1 & runc       & No\\ \hline
+   & Docker & Centos & zfs           & v1 & runc       & No\\ \hline
+   & Docker & Centos & aufs          & v1 & crun       & No\\ \hline
+   & Docker & Centos & btrfs         & v1 & crun       & No\\ \hline
+   & Docker & Centos & devicemapper  & v1 & crun       & No\\ \hline
+   & Docker & Centos & overlay2      & v1 & crun       & No\\ \hline
+   & Docker & Centos & vfs           & v1 & crun       & No\\ \hline
+   & Docker & Centos & zfs           & v1 & crun       & No\\ \hline
+   & Docker & Centos & aufs          & v1 & kata-qemu  & No\\ \hline
+   & Docker & Centos & btrfs         & v1 & kata-qemu  & No\\ \hline
+   & Docker & Centos & devicemapper  & v1 & kata-qemu  & No\\ \hline
+   & Docker & Centos & overlay2      & v1 & kata-qemu  & No\\ \hline
+   & Docker & Centos & vfs           & v1 & kata-qemu  & No\\ \hline
+   & Docker & Centos & zfs           & v1 & kata-qemu  & No\\ \hline
+   & Docker & Centos & devicemapper  & v1 & kata-fc    & No\\ \hline
+   & LXD    & Alpine & btrfs         & v1 & LXC        & No\\ \hline
+   & LXD    & Alpine & zfs           & v1 & LXC        & No\\ \hline
+   & LXD    & Alpine & directory     & v1 & LXC        & No\\ \hline
+   & LXD    & Alpine & lvm           & v1 & LXC        & No\\ \hline
+   & Podman & Alpine & btrfs         & v1 & runc       & No\\ \hline
+   & Podman & Alpine & overlay       & v1 & runc       & No\\ \hline
+   & Podman & Alpine & vfs           & v1 & runc       & No\\ \hline
+   & Podman & Alpine & zfs           & v1 & runc       & No\\ \hline
+   & Podman & Alpine & btrfs         & v2 & crun     & No\\ \hline
+   & Podman & Alpine & overlay       & v2 & crun     & No\\ \hline
+   & Podman & Alpine & vfs           & v2 & crun     & No\\ \hline
+   & Podman & Alpine & zfs           & v2 & crun     & No\\ \hline
+   & Podman & Alpine & btrfs         & v2 & crun     & Yes\\ \hline
+   & Podman & Alpine & overlay       & v2 & crun     & Yes\\ \hline
+   & Podman & Alpine & vfs           & v2 & crun     & Yes\\ \hline
+\end{longtable}
 
 \subsection{Experiments} \label{subs:experiments}
 For all the experiments presented here, time measurements are taken at four important steps of the execution of the container:
@@ -111,7 +144,7 @@ This tests aims at determining the candidate solution that can provide a ready t
 \subsubsection{Basic I/O performances}
 This tests aims at determining mostly the influence of the usage of each storage driver on the performances of an application that relies highly on it.  Four different tests are done here: big file read and write, and great amount of file read and write.  The best candidate solution would be the one to with the shortest creation, starting and execution time ($t_{create} + t_{start} + t_{exec}$).
 
-For the first one, five sqlite databases have been created, of five different size (\texttt{151.6 kB}, \texttt{536.6 kB}, \texttt{2.6 MB}, \texttt{11.9 MB} and \texttt{111.6 MB}, about one order of magnitude appart from each other).  We use an sqlite database as everything will be stored in one file, and no deamon needs to be runnning, which reduces the performance cost of each solicitation to purely I/O (and eventually CPU, if the requests were to be complex, which is not our case here).
+For the first one, five sqlite databases have been created, of five different size (\texttt{151.6 kB}, \texttt{536.6 kB}, \texttt{2.6 MB}, \texttt{11.9 MB} and \texttt{111.6 MB}, about one order of magnitude appart from each other).  We use an sqlite database as everything will be stored in one file, and no deamon needs to be runnning, which reduces the performance cost of each solicitation to mostly I/O (and eventually CPU, if the requests were to be complex, which is not our case here).
 The read test will do a select operation on each table of the database without any filter, displaying all of the table content.  The write test will duplicate each table in the database.  The database chosen as basis to generate all the presented one is \texttt{tpcc}\footnote{\href{https://relational.fit.cvut.cz/dataset/TPCC}{ttps://relational.fit.cvut.cz/dataset/TPCC}}, which a benchmark database, perfect for our case.  The biggest database used is an export from the tpcc database, the other ones are created by removing content of some tables from this same database.
 
 For the second one, five loads of small file have been created (10, 100, 1000, 10 000 and 100 000 files).  The content of the file is alphanumeric, and completely random (no file should be a duplication of another one), each file is $2048$ character (and bytes) long.  This represent the best the kind of file a user could access, to read or write content from/to it. 
