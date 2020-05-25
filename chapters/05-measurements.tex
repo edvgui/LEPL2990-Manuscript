@@ -14,8 +14,118 @@ Based on that, I will try to compose the best solution that should be used in th
 \section{Variabilities influence}
 
 \subsection{Storage driver}
+In order to determine the influence of the choice of one storage driver over another, we will concentrate over the results of some of them to the different I/O tests: Large amount of file read and write, and Big file read and write.
+We won't be comparing each possible configuration here, I have selected the six configurations, only differing by their storage driver to represent the influence of this parameter.  The constant part of the configuration will be:
+
+\begin{tabular}{rl}
+   \textbf{Container manager} & Docker \\
+   \textbf{Container runtime} & runc \\
+   \textbf{Base image} & Alpine \\
+   \textbf{Control group} & v1 \\
+   \textbf{Rootless} & No 
+\end{tabular}
+
+
+\begin{figure}[!h]
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-creation-Docker-alpine-runc---IO-read.png}
+      \caption{Average creation time of containers depending on the number of files in one folder.}
+      \label{fig:storage-driver:io-read-create}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-creation-Docker-alpine-runc---IO-write.png}
+      \caption{Average creation time of containers depending on the size of the archive containing all the files.}
+      \label{fig:storage-driver:io-write-create}
+    \end{subfigure}
+    
+    % \begin{subfigure}{.5\textwidth}
+    %   \centering
+    %   \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-startup-Docker-alpine-runc---IO-read.png}
+    %   \caption{Starting time of containers used for IO reading performance test.}
+    %   \label{fig:storage-driver:io-read-start}
+    % \end{subfigure}
+    % \begin{subfigure}{.5\textwidth}
+    %   \centering
+    %   \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-startup-Docker-alpine-runc---IO-write.png}
+    %   \caption{Starting time of containers used for IO writing performance test.}
+    %   \label{fig:storage-driver:io-write-start}
+    % \end{subfigure}
+    
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-execution-Docker-alpine-runc---IO-read.png}
+      \caption{Average total reading time for n files.}
+      \label{fig:storage-driver:io-read-exec}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-execution-Docker-alpine-runc---IO-write.png}
+      \caption{Average extracting time of n files from one (non-compressed) archive.}
+      \label{fig:storage-driver:io-write-exec}
+    \end{subfigure}
+    
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-full-Docker-alpine-runc---IO-read.png}
+      \caption{Average creation, startup and execution time of containers used for IO reading performance test.}
+      \label{fig:storage-driver:io-read-full}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-full-Docker-alpine-runc---IO-write.png}
+      \caption{Average creation, startup and execution time of containers used for IO reading performance test.}
+      \label{fig:storage-driver:io-write-full}
+    \end{subfigure}
+    
+    \caption{IO read and write tests for containers launched with Docker and runc, based on an Alpine image}
+\end{figure}
+
+\begin{figure}[h!]
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-execution-Docker-alpine-runc---Database-read.png}
+      \caption{Execution time of containers used for database reading performance test.}
+      \label{fig:storage-driver:db-read-exec}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-execution-Docker-alpine-runc---Database-write.png}
+      \caption{Execution time of containers used for database reading performance test.}
+      \label{fig:storage-driver:db-write-exec}
+    \end{subfigure}
+    
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-full-Docker-alpine-runc---Database-read.png}
+      \caption{Creation, startup and execution time of containers used for database reading performance test.}
+      \label{fig:storage-driver:db-read-full}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-full-Docker-alpine-runc---Database-write.png}
+      \caption{Creation, startup and execution time of containers used for database writing performance test.}
+      \label{fig:storage-driver:db-write-full}
+    \end{subfigure}
+    
+    \caption{Database read and write tests for containers launched with Docker and runc, based on an Alpine image}
+\end{figure}
+
+On those figures we can observe the following things:
+\begin{enumerate}
+  \item As vfs as no copy on write mechanism, it has to copy all the data editable in the container for each container creation.  This gives it a drawback over the other solutions with copy on write capabilities, and it get worse as the size of the container grows.  We can see that on both Figure \ref{fig:storage-driver:io-read-create} and Figure \ref{fig:storage-driver:io-write-create}.
+  \item Overlayfs and AUFS are both union filesystems, and their corresponding storage driver perform similarily in most cases.  On Figure \ref{fig:storage-driver:io-read-exec} and Figure \ref{fig:storage-driver:io-write-exec} we can see that this changes, aufs is far behind overlay.  This is because of one significant difference in their implementation; when a file is open with Overlayfs, all the following actions performed on it (read/write) will be directly transfered to the underlying filesystem, overlay has no hand on it.  This is not the case with AUFS, and it is paid heavily when a lot of I/O has to be done.
+  \item As vfs as already copied all files on container creation, it is unbeatable for file creation (Figure \ref{fig:storage-driver:io-write-exec}).  The next faster solution is overlay, which even meet vfs performance when it comes to read small files (Figure \ref{fig:storage-driver:io-read-exec}).  This makes overlay the best solution for reading and creating a lot of files, as it has no creation cost, and its file-based copy on write mechanism is apparently the most efficient for those cases.
+  \item Devicemapper, btrfs and zfs have block-based copy on write, and in the case of devicemapper and btrfs it gives a great advantage when applying modification to big files.  Indeed with such strategy only the blocks that are modified needs to be copied, while other file-based copy-on-write mechanism will have to copy the whole file.  We can see on Figure \ref{fig:storage-driver:db-write-exec} that they even manage to beat vfs.  Btrfs should be chosen over devicemapper though, as we can see in Figure \ref{fig:storage-driver:db-write-full}, this is because devicemapper containers have a greater creation and starting cost.
+\end{enumerate}
+
+\paragraph{}\textbf{In really short, what storage driver is the more performant?}
+Overlay it the best solution for most scenarios.  For the specific case of big file modification, block-based copy-on-write mechanism are better though, in this case choose btrfs over devicemapper (not supported anymore by Docker since v19.03, and higher container creation cost).
 
 \subsection{Container runtime}
+
+
 
 \subsection{Container manager}
 
