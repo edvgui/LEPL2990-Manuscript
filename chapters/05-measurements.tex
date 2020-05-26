@@ -311,13 +311,145 @@ Here the implementation of the storage drivers is different, and less of them ar
 LXD doesn't propose any file-based copy-on-write solution here.  We have dir, which corresponds to vfs for Docker, its full copy on creation is quite obvious on Figure \ref{fig:storage-driver:lxc:io-write-create}.  On Figure \ref{fig:storage-driver:lxc:io-read-create} though, it seems that all different storage driver suffer from the high amount of files to handle (still less than dir of course).  Overall, from Figure \ref{fig:storage-driver:lxc:db} and \ref{fig:storage-driver:lxc:io}, we can see that btrfs is the driver to go with, even though zfs provide decent execution performance, the cost of creating a container with that file system makes it not worth it to use it (for those tests at least).
 
 \subsection{Container runtime}
+The difference of implementation of the container runtime and the different isolation provided will mainly influence the time to execute different commands to interact with the container (like start and exec).  To illustrate that we will focus on the results obtained by different runtimes for the Hello World test.  We will only compare runc, crun, kata-runtime (qemu hypervisor) and kata-fc (firecracker hypervisor).  The common configuration will be:
 
+\begin{tabular}{rl}
+   \textbf{Container manager} & Docker \\
+   \textbf{Container runtime} & overlay/devicemapper \\
+   \textbf{Base image} & Alpine \\
+   \textbf{Control group} & v1 \\
+   \textbf{Rootless} & No 
+\end{tabular}
 
+The reason why we use both overlay and devicemapper in our tests is that overlay provide the best overal esperience, and ideally should be used, but as firecracker only support devicemapper, and given the considerable creation time overhead that this one has, it wouldn't be faire to compare it directly to the other runtime making use of overlay.
 
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=\linewidth]{images/runtime/runtime-Hello-World-Docker-alpine.png}
+    \caption{Hello World container test for different configurations}
+    \label{fig:runtime:hello-world}
+  \end{center}
+\end{figure}
+
+\begin{figure}[h!]
+
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{images/runtime/runtime-execution-Docker-alpine---IO-read.png}
+    \caption{Average total reading time for n files.}
+    \label{fig:runtime:io-read-exec}
+  \end{subfigure}
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{images/runtime/runtime-execution-Docker-alpine---IO-write.png}
+    \caption{Average extracting time of n files from one (non-compressed) archive.}
+    \label{fig:runtime:io-write-exec}
+  \end{subfigure}
+  
+  \caption{}
+  \label{fig:runtime:io}
+
+\end{figure}
+
+\begin{figure}[h!]
+  
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{images/runtime/runtime-execution-Docker-alpine---Database-read.png}
+    \caption{Average total reading time for n files.}
+    \label{fig:runtime:db-read-exec}
+  \end{subfigure}
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{images/runtime/runtime-execution-Docker-alpine---Database-write.png}
+    \caption{Average extracting time of n files from one (non-compressed) archive.}
+    \label{fig:runtime:db-write-exec}
+  \end{subfigure}
+    
+    \caption{}
+    \label{fig:runtime:db}
+
+\end{figure}
+
+As expected, we can see on Figure \ref{fig:runtime:hello-world} that crun (implemented in c) is more efficient than runc (implemented in go).  We can also see that even though kata-runtime provide a stronger isolation using virutalization, its performances are not that far behind runc.  Kata-fc has a harder time keeping up though.  We can also see on Figure \ref{fig:runtime:io} and Figure \ref{fig:runtime:db} that crun keeps its advantage in execution time for I/O intensive tasks.
+
+\clearpage
 \subsection{Container manager}
 
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=\linewidth]{images/manager/manager-Hello-World-alpine.png}
+    \caption{Hello World container test for different configurations}
+    \label{fig:manager:hello-world}
+  \end{center}
+\end{figure}
+
+\begin{figure}[h!]
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/manager/manager-execution-alpine---Database-read.png}
+      \caption{Execution time of containers used for database reading performance test.}
+      \label{fig:manager:db-read-exec}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/manager/manager-execution-alpine---Database-write.png}
+      \caption{Execution time of containers used for database reading performance test.}
+      \label{fig:manager:db-write-exec}
+    \end{subfigure}
+    
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/manager/manager-full-alpine---Database-read.png}
+      \caption{Creation, startup and execution time of containers used for database reading performance test.}
+      \label{fig:manager:db-read-full}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/manager/manager-full-alpine---Database-write.png}
+      \caption{Creation, startup and execution time of containers used for database writing performance test.}
+      \label{fig:manager:db-write-full}
+    \end{subfigure}
+    
+    \caption{Database read and write tests for containers launched with LXD and LXC, based on an Alpine image}
+    \label{fig:manager:db}
+\end{figure}
+
+\begin{figure}[h!]
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/manager/manager-execution-alpine---IO-read.png}
+      \caption{Average total reading time for n files.}
+      \label{fig:manager:io-read-exec}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/manager/manager-execution-alpine---IO-write.png}
+      \caption{Average extracting time of n files from one (non-compressed) archive.}
+      \label{fig:manager:io-write-exec}
+    \end{subfigure}
+    
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/manager/manager-full-alpine---IO-read.png}
+      \caption{Creation, startup and execution time of containers used for IO reading performance test.}
+      \label{fig:manager:io-read-full}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/manager/manager-full-alpine---IO-write.png}
+      \caption{Creation, startup and execution time of containers used for IO writing performance test.}
+      \label{fig:manager:io-write-full}
+    \end{subfigure}
+    
+    \caption{IO read and write tests for containers based on an Alpine image}
+    \label{fig:manager:db}
+\end{figure}
+
+\clearpage
 \subsection{Base image}
 
+\clearpage
 \subsection{Rootless container}
 
 \section{Best overal solution}
