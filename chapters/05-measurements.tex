@@ -374,6 +374,94 @@ The reason why we use both overlay and devicemapper in our tests is that overlay
 As expected, we can see on Figure \ref{fig:runtime:hello-world} that crun (implemented in c) is more efficient than runc (implemented in go).  We can also see that even though kata-runtime provide a stronger isolation using virutalization, its performances are not that far behind runc.  Kata-fc has a harder time keeping up though.  We can also see on Figure \ref{fig:runtime:io} and Figure \ref{fig:runtime:db} that crun keeps its advantage in execution time for I/O intensive tasks.
 
 \clearpage
+\subsection{Base image}
+\begin{figure}[h!]
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/image/image-execution-Docker-crun---Database-read.png}
+      \caption{Execution time of containers used for database reading performance test.}
+      \label{fig:image:db-read-exec}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/image/image-execution-Docker-crun---Database-write.png}
+      \caption{Execution time of containers used for database reading performance test.}
+      \label{fig:image:db-write-exec}
+    \end{subfigure}
+    
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/image/image-full-Docker-crun---Database-read.png}
+      \caption{Creation, startup and execution time of containers used for database reading performance test.}
+      \label{fig:image:db-read-full}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/image/image-full-Docker-crun---Database-write.png}
+      \caption{Creation, startup and execution time of containers used for database writing performance test.}
+      \label{fig:image:db-write-full}
+    \end{subfigure}
+    
+    \caption{Database read and write tests for containers launched with Docker and crun}
+\end{figure}
+
+\begin{figure}[!h]
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/image/image-creation-Docker-crun---IO-read.png}
+      \caption{Average creation time of containers depending on the number of files in one folder.}
+      \label{fig:image:io-read-create}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/image/image-creation-Docker-crun---IO-write.png}
+      \caption{Average creation time of containers depending on the size of the archive containing all the files.}
+      \label{fig:image:io-write-create}
+    \end{subfigure}
+    
+    % \begin{subfigure}{.5\textwidth}
+    %   \centering
+    %   \includegraphics[width=\linewidth]{images/image/image-startup-Docker-crun---IO-read.png}
+    %   \caption{Starting time of containers used for IO reading performance test.}
+    %   \label{fig:image:io-read-start}
+    % \end{subfigure}
+    % \begin{subfigure}{.5\textwidth}
+    %   \centering
+    %   \includegraphics[width=\linewidth]{images/image/image-startup-Docker-crun---IO-write.png}
+    %   \caption{Starting time of containers used for IO writing performance test.}
+    %   \label{fig:image:io-write-start}
+    % \end{subfigure}
+    
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/image/image-execution-Docker-crun---IO-read.png}
+      \caption{Average total reading time for n files.}
+      \label{fig:image:io-read-exec}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/image/image-execution-Docker-crun---IO-write.png}
+      \caption{Average extracting time of n files from one (non-compressed) archive.}
+      \label{fig:image:io-write-exec}
+    \end{subfigure}
+    
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/image/image-full-Docker-crun---IO-read.png}
+      \caption{Average creation, startup and execution time of containers used for IO reading performance test.}
+      \label{fig:image:io-read-full}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/image/image-full-Docker-crun---IO-write.png}
+      \caption{Average creation, startup and execution time of containers used for IO reading performance test.}
+      \label{fig:image:io-write-full}
+    \end{subfigure}
+    
+    \caption{IO read and write tests for containers launched with Docker and crun}
+\end{figure}
+
+\clearpage
 \subsection{Container manager}
 
 \begin{figure}[h!]
@@ -445,9 +533,6 @@ As expected, we can see on Figure \ref{fig:runtime:hello-world} that crun (imple
     \caption{IO read and write tests for containers based on an Alpine image}
     \label{fig:manager:db}
 \end{figure}
-
-\clearpage
-\subsection{Base image}
 
 \clearpage
 \subsection{Rootless container}
