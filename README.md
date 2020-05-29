@@ -3,6 +3,12 @@ This repository hosts my master thesis manuscript.
 
 The last compiled version of the document can be found [here](https://github.com/geverartsdev/LEPL2990-Manuscript/blob/master/manuscript.pdf).
 
+### Dependencies
+#### Ubuntu
+```console
+$ apt install texlive texlive-lang-english texlive-latex-extra
+```
+
 ### Compile document
 The base source document is [manuscript.tex](https://github.com/geverartsdev/LEPL2990-Manuscript/blob/master/manuscript.tex).  
 The output file is [manuscript.pdf](https://github.com/geverartsdev/LEPL2990-Manuscript/blob/master/manuscript.pdf).
