@@ -462,6 +462,79 @@ As expected, we can see on Figure \ref{fig:runtime:hello-world} that crun (imple
 \end{figure}
 
 \clearpage
+\subsection{Rootless container}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=\linewidth]{images/rootless/rootless-Http-server-Podman-alpine-crun.png}
+    \caption{Hello World container test for different configurations}
+    \label{fig:rootless:hello-world}
+  \end{center}
+\end{figure}
+
+\begin{figure}[h!]
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/rootless/rootless-execution-Podman-alpine-crun---Database-read.png}
+      \caption{Execution time of containers used for database reading performance test.}
+      \label{fig:rootless:db-read-exec}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/rootless/rootless-execution-Podman-alpine-crun---Database-write.png}
+      \caption{Execution time of containers used for database reading performance test.}
+      \label{fig:rootless:db-write-exec}
+    \end{subfigure}
+    
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/rootless/rootless-full-Podman-alpine-crun---Database-read.png}
+      \caption{Creation, startup and execution time of containers used for database reading performance test.}
+      \label{fig:rootless:db-read-full}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/rootless/rootless-full-Podman-alpine-crun---Database-write.png}
+      \caption{Creation, startup and execution time of containers used for database writing performance test.}
+      \label{fig:rootless:db-write-full}
+    \end{subfigure}
+    
+    \caption{Database read and write tests for containers launched with Podman and crun, based on an Alpine image}
+    \label{fig:rootless:db}
+\end{figure}
+
+\begin{figure}[h!]
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/rootless/rootless-execution-Podman-alpine-crun---IO-read.png}
+      \caption{Average total reading time for n files.}
+      \label{fig:rootless:io-read-exec}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/rootless/rootless-execution-Podman-alpine-crun---IO-write.png}
+      \caption{Average extracting time of n files from one (non-compressed) archive.}
+      \label{fig:rootless:io-write-exec}
+    \end{subfigure}
+    
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/rootless/rootless-full-Podman-alpine-crun---IO-read.png}
+      \caption{Creation, startup and execution time of containers used for IO reading performance test.}
+      \label{fig:rootless:io-read-full}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{images/rootless/rootless-full-Podman-alpine-crun---IO-write.png}
+      \caption{Creation, startup and execution time of containers used for IO writing performance test.}
+      \label{fig:rootless:io-write-full}
+    \end{subfigure}
+    
+    \caption{IO read and write tests for containers based on an Alpine image, launched with Podman and crun}
+    \label{fig:rootless:db}
+\end{figure}
+
+\clearpage
 \subsection{Container manager}
 
 \begin{figure}[h!]
@@ -499,7 +572,7 @@ As expected, we can see on Figure \ref{fig:runtime:hello-world} that crun (imple
       \label{fig:manager:db-write-full}
     \end{subfigure}
     
-    \caption{Database read and write tests for containers launched with LXD and LXC, based on an Alpine image}
+    \caption{Database read and write tests for containers based on an Alpine image}
     \label{fig:manager:db}
 \end{figure}
 
@@ -535,6 +608,4 @@ As expected, we can see on Figure \ref{fig:runtime:hello-world} that crun (imple
 \end{figure}
 
 \clearpage
-\subsection{Rootless container}
-
 \section{Best overal solution}
