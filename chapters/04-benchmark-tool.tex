@@ -1,8 +1,10 @@
 \chapter{Benchmark tool}
-In this chapter I will present the setup used to perform my measurements, the differents tests I made and the candidates solutions that are going to be compared with one another.
+
+As said previously, the goal of this thesis will be to identify if some improvements could be made to INGInious, by changing the containerization solution in use.  In order to do this, I have created some tests, and listed different possible configuration that should face those test.  Based on the results to those tests, I should be able to determine whether or not we can bring improvement to INGInious.
 
 \section{Setup}
 \subsection{Testing environment}
+To be fair in the result comparison, all the different configurations have to be tested with as much in common as possible.  This will allow to determine the influence of varying parameters in those configurations.  To do so, the same machine will be used for all the tests, with its configuration beeing updated accordingly to the requirements of each solution.
 
 The testing environment used for the final results presented in this work is an an old laptop, refurbished with the following configuration:\\
 \begin{tabular}{rl}
@@ -11,7 +13,7 @@ The testing environment used for the final results presented in this work is an 
   \textbf{memory} & 8GB \\
   \textbf{storage} & 256GB SSD \\
   \textbf{operation system} & Ubuntu 18.04.4 LTS \\
-  \textbf{linux kernel version} & 4.15.0-101-generic \\ % patch level was 99 on nuc
+  \textbf{linux kernel version} & 4.15.0-101-generic \\
 
 \end{tabular}
 
@@ -40,10 +42,10 @@ A candidate solution is a combinaison of different elements, variabilities, choi
   \renewcommand\labelitemi{--}
   \item \textbf{Container manager}: \textit{Docker}, \textit{Podman}, \textit{LXD}, those are the different user friendly solution that can be used to manage container, and that we will compare here.
   \item \textbf{Container runtime}: \textit{runc}, \textit{crun}, \textit{LXC}, \textit{Kata containers} (Qemu or Firecracker), the (less user-friendly) container runtimes, taking care of all the isolation that a container require.
-  \item \textbf{Control group}: \textit{cgroup} and \textit{cgroupv2}, there is no real choice to make here, cgroupv2 is the successor of cgroup, and should be used, when supported by the other element of the configuration.
+  \item \textbf{Control group}: \textit{cgroup} and \textit{cgroupv2}, there is no real choice to make here, cgroupv2 is the successor of cgroup, and should be used, when supported by the other elements of the configuration.
   \item \textbf{Storage driver}: \textit{aufs}, \textit{btrfs}, \textit{devicemapper}, \textit{directory}, \textit{overlay}, \textit{vfs}, \textit{zfs}, \textit{lvm}, those are the different strategies that can be used to manage the file system of the container.
-  \item \textbf{Base container image}: \textit{Alpine} because it is the default choice when it comes to conceive containerized applications today and \textit{Centos} because it is the current choice made by INGInious.
-  \item \textbf{Rootless container}: Run the container in rootless mode.
+  \item \textbf{Base container image}: \textit{Alpine} because it is the default choice when it comes to conceive containerized applications today or \textit{Centos} because it is the current choice made by INGInious.
+  \item \textbf{Rootless container}: Whether if \textit{yes} or \textit{no}, we run the container in rootless mode.
 \end{itemize}
 
 Though, we can not compose a candidate solution with one element of each category, randomly picked.  Some element of the solution might only be usable with some of the possibilities for a variability.  The different constraints that we have are listed here:
@@ -61,7 +63,7 @@ Though, we can not compose a candidate solution with one element of each categor
   % TODO Check if kata-runtime is compatible with cgroupv2
 \end{itemize}
 
-The list of different candidate solution we can compare is presented in tables below.  Each container will be launched with a CPU limitation of one single core, and memory limitation of 1GB.  This is more than enough for each test that will be done.  A network interface will be only added to the container if it needs it for the specific test.\\\\
+The list of different candidate solution we can compare is presented in the table below.  Each container will be launched with a CPU limitation of one single core, and memory limitation of 1GB.  This is more than enough for each test that will be done.  A network interface will be only added to the container if it needs it for the specific test.\\\\
 
 \newcounter{rowno}
 \setcounter{rowno}{0}
@@ -80,13 +82,13 @@ The list of different candidate solution we can compare is presented in tables b
    & Docker & Alpine & overlay2      & v1 & crun       & No\\ \hline
    & Docker & Alpine & vfs           & v1 & crun       & No\\ \hline
    & Docker & Alpine & zfs           & v1 & crun       & No\\ \hline
-   & Docker & Alpine & aufs          & v1 & kata-qemu  & No\\ \hline
-   & Docker & Alpine & btrfs         & v1 & kata-qemu  & No\\ \hline
-   & Docker & Alpine & devicemapper  & v1 & kata-qemu  & No\\ \hline
-   & Docker & Alpine & overlay2      & v1 & kata-qemu  & No\\ \hline
-   & Docker & Alpine & vfs           & v1 & kata-qemu  & No\\ \hline
-   & Docker & Alpine & zfs           & v1 & kata-qemu  & No\\ \hline
-   & Docker & Alpine & devicemapper  & v1 & kata-fc    & No\\ \hline
+   & Docker & Alpine & aufs          & v1 & kata-runtime\footnote{Default Kata Containers runtime, using qemu as hypervisor.}  & No\\ \hline
+   & Docker & Alpine & btrfs         & v1 & kata-runtime  & No\\ \hline
+   & Docker & Alpine & devicemapper  & v1 & kata-runtime  & No\\ \hline
+   & Docker & Alpine & overlay2      & v1 & kata-runtime  & No\\ \hline
+   & Docker & Alpine & vfs           & v1 & kata-runtime  & No\\ \hline
+   & Docker & Alpine & zfs           & v1 & kata-runtime  & No\\ \hline
+   & Docker & Alpine & devicemapper  & v1 & kata-fc\footnote{Kata Containers runtime, using Firecracker as hypervisor}    & No\\ \hline
    & Docker & Centos & aufs          & v1 & runc       & No\\ \hline
    & Docker & Centos & btrfs         & v1 & runc       & No\\ \hline
    & Docker & Centos & devicemapper  & v1 & runc       & No\\ \hline
@@ -99,12 +101,12 @@ The list of different candidate solution we can compare is presented in tables b
    & Docker & Centos & overlay2      & v1 & crun       & No\\ \hline
    & Docker & Centos & vfs           & v1 & crun       & No\\ \hline
    & Docker & Centos & zfs           & v1 & crun       & No\\ \hline
-   & Docker & Centos & aufs          & v1 & kata-qemu  & No\\ \hline
-   & Docker & Centos & btrfs         & v1 & kata-qemu  & No\\ \hline
-   & Docker & Centos & devicemapper  & v1 & kata-qemu  & No\\ \hline
-   & Docker & Centos & overlay2      & v1 & kata-qemu  & No\\ \hline
-   & Docker & Centos & vfs           & v1 & kata-qemu  & No\\ \hline
-   & Docker & Centos & zfs           & v1 & kata-qemu  & No\\ \hline
+   & Docker & Centos & aufs          & v1 & kata-runtime  & No\\ \hline
+   & Docker & Centos & btrfs         & v1 & kata-runtime  & No\\ \hline
+   & Docker & Centos & devicemapper  & v1 & kata-runtime  & No\\ \hline
+   & Docker & Centos & overlay2      & v1 & kata-runtime  & No\\ \hline
+   & Docker & Centos & vfs           & v1 & kata-runtime  & No\\ \hline
+   & Docker & Centos & zfs           & v1 & kata-runtime  & No\\ \hline
    & Docker & Centos & devicemapper  & v1 & kata-fc    & No\\ \hline
    & LXD    & Alpine & btrfs         & v1 & LXC        & No\\ \hline
    & LXD    & Alpine & zfs           & v1 & LXC        & No\\ \hline
@@ -162,15 +164,15 @@ The command available to interact with each step of the lifecycle of the contain
 In order to do this, each container will be running as first process a shell\footnote{except for LXD, which natively has an init process running in each container}, which will never receive any input, but is here to ensure that the container will stay up as long as we need it.  When we don't need the container anymore, we simply kill all the processes in it.
 
 \subsubsection{Booting time}
-This tests aims at determining the candidate solution that can provide a ready to run container the faster.  In order to measure this, a simple container composed of only the base image is created, in which the simple command \texttt{/bin/echo Hello World} is executed.  The best candidate would be the one that has the shortest creation and starting time ($t_{create} + t_{start}$).
+This tests aims at determining the candidate solution that can provide a ready to run container the fastest.  In order to measure this, a simple container composed of only the base image is created, in which the simple command \texttt{/bin/echo Hello World} is executed.  The best candidate would be the one that has the shortest creation and starting time ($t_{create} + t_{start}$).  The execution time ($t_{exec}$) is also a good illustration of the overhead caused by all the steps taken before actually starting the process in the container.
 
 \subsubsection{Basic I/O performances}
-This tests aims at determining mostly the influence of the usage of each storage driver on the performances of an application that relies highly on it.  Four different tests are done here: big file read and write, and great amount of file read and write.  The best candidate solution would be the one to with the shortest creation, starting and execution time ($t_{create} + t_{start} + t_{exec}$).
+Those tests aim at determining mostly the influence of the usage of each storage driver on the performances of an application that relies highly on it.  Four different tests are done here: big file read and write, and great amount of file read and write.  The best candidate solution would be the one to with the shortest creation, starting and execution time ($t_{create} + t_{start} + t_{exec}$).
 
-For the first one, five sqlite databases have been created, of five different size (\texttt{151.6 kB}, \texttt{536.6 kB}, \texttt{2.6 MB}, \texttt{11.9 MB} and \texttt{111.6 MB}, about one order of magnitude appart from each other).  We use an sqlite database as everything will be stored in one file, and no deamon needs to be runnning, which reduces the performance cost of each solicitation to mostly I/O (and eventually CPU, if the requests were to be complex, which is not our case here).
-The read test will do a select operation on each table of the database without any filter, displaying all of the table content.  The write test will duplicate each table in the database.  The database chosen as basis to generate all the presented one is \texttt{tpcc}\footnote{\href{https://relational.fit.cvut.cz/dataset/TPCC}{ttps://relational.fit.cvut.cz/dataset/TPCC}}, which a benchmark database, perfect for our case.  The biggest database used is an export from the tpcc database, the other ones are created by removing content of some tables from this same database.
+For the first one, five sqlite databases have been created, of five different size (\texttt{151.6 kB}, \texttt{536.6 kB}, \texttt{2.6 MB}, \texttt{11.9 MB} and \texttt{111.6 MB}, about one order of magnitude appart from each other).  We use an sqlite database as everything will be stored in one file, and no deamon needs to be runnning, which simplify the set up of the tests.  Plus this is a more realistic workload than just reading/writing one gigantic file.
+The read test will do a select operation on each table of the database without any filter, displaying all of the table content.  The write test will duplicate each table in the database.  The database chosen as basis to generate all the presented one is \texttt{tpcc}\footnote{\href{https://relational.fit.cvut.cz/dataset/TPCC}{ttps://relational.fit.cvut.cz/dataset/TPCC}}, which is a benchmark database, perfect for our case.  The biggest database used is an export from the tpcc database, the other ones are created by removing content of some tables from this same database.
 
-For the second one, five loads of small file have been created (10, 100, 1000, 10 000 and 100 000 files).  The content of the file is alphanumeric, and completely random (no file should be a duplication of another one), each file is $2048$ character (and bytes) long.  This represent the best the kind of file a user could access, to read or write content from/to it. 
+For the second one, five loads of small file have been created (10, 100, 1000, 10 000 and 100 000 files).  The content of the file is alphanumeric, and completely random (no file should be a duplication of another one), each file is $4096$ character (and bytes) long.  This represent the best the usual kind of file a user could access, to read or write content from/to it. 
 The read test will load the content of each file in memory, then discard it and move to the next one.  The write test will extract an uncompressed archive (\texttt{tar}) containing all those files.
 
 \subsubsection{Network setup time}
