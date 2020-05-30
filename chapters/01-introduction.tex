@@ -4,7 +4,7 @@ In this chapter I will simply introduce the subject of this master thesis, showi
 
 \section{INGInious}
 
-INGInious is a web platform developped by the UCL.  It is a tool for automatic correction of programs written by students.  It currently relies on Docker containers to provide a good isolation between the machine hosting the site and the execution of the student's codes.  So that a problem in a program submitted by a student couldn't have any impact on the platform.  Docker also allow to manage the resources granted to each code execution.  For now INGInious can meet the demand and provide honest performances and responsiveness.  But looking at the growing usage of the platform, we might soon come to a point where we reach the limits of the current implementation.
+INGInious is a web platform developped by the UCL.  It is a tool for automatic correction of programs written by students. To check the validity of a student's code, the latest will be executed, feeded with some inputs, and the outputs generated will be checked. It currently relies on Docker containers to provide a good isolation between the machine hosting the site and the execution of the student's codes.  So that a problem in a program submitted by a student couldn't have any impact on the platform.  Docker also allow to manage the resources granted to each code execution.  For now INGInious can meet the demand and provide honest performances and responsiveness.  But looking at the growing usage of the platform, we might soon come to a point where we reach the limits of the current implementation.
 
 \subsection{Architecture}
 INGInious counts four main components:
@@ -27,7 +27,7 @@ The journey of a task submitted on INGInious is represented on Figure \ref{fig:a
 The key features of INGInious, that allow it to meet the requirement of a code grading plateform are the following:
 \begin{itemize}
   \item Isolation between the student's code and the platform.
-  \item Resource limitation (CPU, RAM, Network) for the student's code execution.
+  \item Resource limitation (CPU, RAM, Network, Pids) for the student's code execution.
   \item Modularity and versatility regarding the tasks that INGInious can correct.  Multiple programming language are supported, and new ones can easily be added.
 \end{itemize}
 
@@ -40,14 +40,14 @@ When a task is submitted, we can count five delays before the answer can be deli
   \item The grading time: the time it takes for the code to run and for the teacher's container to grade it.
   \item The response time: the time to send the reponse back to the student.
 \end{itemize}
-For the first and the last one, supposing that the machine hosting the website is not overwhelmed, the delay depends entirely on the network, this is a bit out of our hands here.  The waiting time is directly related to the current load on the platform, this is a more a symptom of the server overwhelming than its cause, it could be directly solved by using a scaling strategies (see section \ref{section:scaling}).  And then we come to the booting time and the grading time, which directly depends on the containerization technology used and on the hardware performances, this is were we are going to try to improve things in this thesis.
+For the first and the last one, supposing that the machine hosting the website is not overwhelmed, the delay depends entirely on the network, this is a bit out of our hands here.  The waiting time is directly related to the current load on the platform, this is a more a symptom of the server overwhelming than its cause, it could be directly solved by using a scaling strategies (see section \ref{section:scaling}).  And then we come to the booting time and the grading time, which directly depends on the containerization technology used and on the hardware performances, this is were we are going to try to see if we can improve things in this thesis.
 
 \section{Scaling} \label{section:scaling}
 Currently, the resources provided to INGInious vary depending on the load that the platform is expected to be facing.  Typically, when the grading of an exam is done by INGInious, the platform is scaled up, and during the holidays it is scaled down.  When it comes to scaling, two strategies can be used; vertical scaling and horizontal scaling.
 
-\paragraph{} \textbf{Vertical scaling} consists in adding more resources on a single machine, to improve its performances when needed.  For example, when the number of tasks arriving to the server grow, we could increase the number of virtual Cores allocated to the Virtual Machine hosting the platform in order to be able to threat more of them concurrently.  If the size of the waiting queue is increasing, we might want to make more RAM available.
+\paragraph{} \textbf{Vertical scaling} consists in adding more resources on a single machine, to improve its performances when needed.  For example, when the number of tasks arriving to the server grows, we could increase the number of virtual Cores allocated to the Virtual Machine hosting the platform in order to be able to threat more of them concurrently.  If the size of the waiting queue is increasing, we might want to make more RAM available.
 
 \paragraph{} \textbf{Horizontal scaling} consists in sharing the workload across multiple machines, so that each machine can handle a small part of it.  This is a solution widely used nowadays as it allows to scale up virtually indefinetely, which is not the case with vertical scally where we depend on the maximum capacity of the hardware.  This requires to rethink the architecture of the platform globally.
 
 \section{Intentions}
-The master thesis aims at improving INGInious, regarding its performances and its scalability.  To do so, I will search and compare different containerization technologies that could be used instead of Docker.  The goal is to find an alternative that decreases the booting time (and the grading time) without loosing any of the key features of the platform.  If such an alternative is found and proven to be worth the change, INGInious could then be refreshed with it.
+The master thesis aims at improving INGInious, regarding its performances and its scalability.  To do so, I will search and compare different containerization technologies and configurations that could be used instead of Docker's current configuration.  The goal is to find if an alternative could decreases the booting time (and the grading time) without loosing any of the key features of the platform.  If such an alternative is found and proven to be worth the change, INGInious could then be refreshed with it.

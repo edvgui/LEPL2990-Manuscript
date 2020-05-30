@@ -1,6 +1,6 @@
 \chapter{Background knowledge}
 
-In this chapter I will put some basis, and explain some concepts related to my work.  Reading this chapter should allow the reader to understand what I did in this work, regardless of its background.
+In this chapter I will put some basis, and explain some concepts related to my work.  Reading this chapter should allow the reader to understand what I did in this work, supposing it is already familiar with Linux.
 
 \section{Virtualisation, Containerisation, Runtime isolation}
 \paragraph{}We always want the same thing, be able to execute some code, with no interaction with someone else's one.  As of course we can not use one bare-metal machine for each application we want to run, some mechanism have to be used to provide isolation between coexisting processes on a same physical machine.
@@ -14,11 +14,11 @@ We can distinguish three level of isolation: Virtualisation, Containerisation an
   \end{center}
 \end{figure}
 \subsection{Virtualisation}
-The isolation layer is located either between the hardware and the guest OS (hypervisor of type 1) or between a virtualisation of the hardware, by an hypervisor (type 2) running in another OS, and the guest OS.  In both cases, the guest OS, will run as if it was on a bare-metal machine, executing its own kernel, managing its drivers, its file system, etc.  This is the stronger isolation we can get.  Cloud providers can rent you some Virtual Machines, this is what we call IaaS (Infrastructure as a Service).  You can use many different hypervisor solutions, usually, Cloud providers have their very own solution.
+The isolation layer is located either between the hardware and the guest OS (hypervisor of type 1) or between a virtualisation of the hardware and the guest OS, by an hypervisor (type 2) running in another OS.  In both cases, the guest OS, will run as if it was on a bare-metal machine, executing its own kernel, managing its drivers, its file system, etc.  This is the stronger isolation we can get.  Cloud providers can rent you some Virtual Machines, this is what we call IaaS (Infrastructure as a Service).  You can use many different hypervisor solutions, usually, Cloud providers have their very own solution.
 \subsection{Containerisation}
 Here we go one level higher, the isolation layer is between the OS and the guest application.  This isolation mechanism is called a container, and is basically a set of processes, running in common namespaces, with a root filesystem different from the host.  Containers share the same kernel as the host though, which means that a process running in a container can be seen from the host.  Containers belong to the world of PaaS (Platform as a Service), a system where Cloud providers offers you to run your application (that you provide under a containerized form) whithout having to worry about all the infrastructure than needs to be deploied along with it, and sometimes even with some great scalability mechanism support.
 \subsection{Runtime isolation}
-This is the highest level of (weakest) isolation you can get, the isolation is provided by the runtime on which the application is running (ex: The JVM for a Java program, a Python environment, ...).  Multiple guest applications share the same OS, file system, whithout any mechanism to hide it from them.  Cloud providers propose such service under the name of FaaS (Function as a Service).  For this you can provide a small program, that you want to be executed on demand.  Cloud providers usually allocate a container to this program, to provide a safer isolation, but will execute multiple instances of this program in the same containers, to avoid the overhead of creating a new containers each time.  The kinds of programs you usually run in these are computionnaly intensive parts of your application, that needs to have low response time and great scalability (for example resizing of user uploaded images).  This model is often reference as the Lambda model (from Amazon Lambda service) or as serverless computing.
+This is the highest (weakest) level of isolation you can get.  The isolation is provided by the runtime on which the application is running (ex: The JVM for a Java program, a Python environment, ...).  Multiple guest applications share the same OS, file system, whithout any mechanism to hide it from them.  Cloud providers propose such service under the name of FaaS (Function as a Service).  For this you can provide a small program, that you want to be executed on demand.  Cloud providers usually allocate a container to this program, to provide a safer isolation, but will execute multiple instances of this program in the same containers, to avoid the overhead of creating a new containers each time.  The kinds of programs you usually run in these are computionnaly intensive parts of your application, that needs to have low response time and great scalability (for example resizing of user uploaded images).  This model is often reference as the Lambda model (from Amazon Lambda service) or as serverless computing.
 
 \subsection{INGInious use case}
 The case of INGInious is a special one.  The type of the workload caused by the tasks evaluation (fast response time, varying demand, potentially big computation, logic independent of the core application) would suggest to use a serverless strategy, but the isolation requirement are those of PaaS (as the various inputs of the functions are code of student to safely execute, isolated from one another).  And for now the all application relies on IaaS, running in multiple VMs where are hosted the core application and multiple docker agents.  
@@ -28,22 +28,22 @@ The isolation being the most important requirement, we will then look into conta
 
 \subsection{Core concepts}
 Containers rely on three components: namespaces, control groups and chroot.
-\paragraph{}\textbf{Namespaces} are a feature of the Linux kernel since 2002, they are a key element that made containerisation possible.  A namespace can be associated to a context, which is a partition of all the resources of a system that a set of processes has access to, while other processes can't.  Those sets of resources can be of seven kinds:
+\paragraph{}\textbf{Namespaces} are a feature of the Linux kernel since 2002.  A namespace can be associated to a context, which is a partition of all the resources of a system that a set of processes has access to, while other processes can't.  Those sets of resources can be of seven kinds:
 \begin{itemize}
 \renewcommand\labelitemi{--}
   \item \textbf{mnt} (Mount): This controls the mount points.  Processes can only have access to the mount point of their namespace.
-  \item \textbf{pid} (Process ID): This allows each process in each namespace to get a process id assigned indepedently of other namespaces porcesses.
+  \item \textbf{pid} (Process ID): This allows each process in each namespace to get a process id assigned indepedently of other namespaces processes.  The first process in a namespace will then get the pid 1 inside of the namespace, but another one outside of it.
   \item \textbf{net} (Network): This provides a virtualized network stack.
   \item \textbf{ipc} (Interprocess Communication): This allows processes of a same namespace to communicate with one another, for example by sharing some memory.
   \item \textbf{uts} (Hostname): This allows to have different hostnames on a same machine, each hostname being considered as unique by the processes of its namespace.
-  \item \textbf{user} (User ID): This allows to change the user id in a namespace.
+  \item \textbf{user} (User ID): This allows to change the user id in a namespace.  This way you could have a user root in the namespace, which actually isn't outside of it.
   \item \textbf{cgroup} (Control group): This allows to change the root cgroup directory, this virtualize how process's cgroups are viewed.
 \end{itemize}
 
 \paragraph{}When a Linux machine starts, it initiate one namespace of each type in which all the processes run.  The processes can then choose to create and switch of namespaces.
 
 \paragraph{}\textbf{Control groups} are a feature of the Linux kernel that allows to limit and control the resources allocated to some processes.  You can for example control the cpu usage, the memory consumption, the io...  Recently (since kernel 4.5) a new version of cgroups (cgroups v2) appeared, which comes to tackle the flaws of the original implementation, while keeping all of its functionalities.  The main change is the use of a new unified hierarchy to manage the control groups, where all the resources are centralized and where the allocation of some resources is done by adding a sub-resource-group in the hierarchy the current user has access to.
-Though, the adoption of the new version is a process, and takes times, and still now many applications use the original version of cgroup (like runc).
+Though, the adoption of the new version is a process, and takes times, and still now many applications use the original version of cgroup.
 
 \paragraph{}\textbf{Chroot} allows to change the root of the root filesystem for some processes.  For example, we could create a directory \texttt{/tmp/myroot/} which contains all of the usual directories present in the original root folder (\texttt{/}) and set this as the new apparent root for the chosen processes.  This is not a complete sandbox, and not a real isolation on its own, files from outside of the chroot could still be accessed.
 
@@ -58,7 +58,7 @@ When it comes to handle a container file system, different solutions can be used
   \item \textbf{Block based copy on write}: for each container, will be copied only the blocks (in the filesystem) that are edited during the container life cycle.  This is even more complex, but get more efficient as some small part of big files are edited.
 \end{itemize}
 
-\paragraph{}Containers are a specific kind of workload in the sense that many information, data, is redundant in different containers.  For example, for a simple application, we could use several containers with different responsabilities and tools embedded in it, but all based on the same Alpine image.  This brought a new space problem, as we don't want to avoid duplicating too much data.  In order to face this, \textbf{union filesystems} are used, along with layered container images.  This basically means that different container images but with the same basis, will actually share this same basis, avoiding the need to duplicate it.  It differs from file system deduplication mechanism by the level at which the action is taken.  For deduplication, when a block is written on disk, we check if similar data isn't already located somewhere.  Whereas for union file system, the common base image will be read-only, and when an attempt to modify a file is made, a bind mound will be made with a copy of the file on top of the original one, so that the common base stays preserved.
+\paragraph{}Containers are a specific kind of workload in the sense that many information, data, is redundant in different containers.  For example, for a simple application, we could use several containers with different responsabilities and tools embedded in it, but all based on the same Alpine image.  This brought a new space problem, as we don't want to avoid duplicating too much data.  In order to face this, \textbf{union filesystems} are used, along with layered container images.  This basically means that different container images but with the same basis, will actually share the common part of their file system, avoiding the need to duplicate it.  It differs from file system deduplication mechanism by the level at which the action is taken.  For deduplication, when a block is written on disk, we check if similar data isn't already located somewhere.  Whereas for union file system, the common base image will be read-only, and when an attempt to modify a file is made, a bind mound will be made with a copy of the file on top of the original one, so that the common base stays preserved.
 
 \paragraph{}The storage of a container has to be backed by a file system, which will eventually already provide some interesting mechanisms for the container.  Those four main filesystem used are:
 \begin{itemize}
@@ -69,24 +69,21 @@ When it comes to handle a container file system, different solutions can be used
   \item \textbf{ext4} was meant to be the replacement to ext3, as the "Linux Filesystem" when it was presented in 2007. \cite{mathur2007new}  It aims at providing a good balance between scalability, reliability, performance and stability.  It doesn't provide any of the fancy feature of the previous file system.
 \end{itemize}
 
-The Table \ref{tab:storage-drivers} present a short summary of the different storage driver available for the different solutions.
+The Table \ref{tab:storage-drivers} present a short summary of the different storage driver available today to use with container managers.
 \begin{table}[!h]
   \begin{center}
     \begin{tabular}{|l|c|c|c|}
       \hline
-      \textbf{Tool} & \textbf{Storage driver} & \textbf{C-o-W}\tablefootnote{Copy-on-write} & \textbf{FS}\tablefootnote{Backing file system}\\
+      \textbf{Storage driver} & \textbf{C-o-W}\tablefootnote{Copy-on-write} & \textbf{FS}\tablefootnote{Backing file system}\\
       \hline
-      Docker/Podman & \texttt{overlay2} & file based & ext4, xFS \\
-      Docker/Podman & \texttt{aufs} & file based & ext4, xFS \\
-      Docker/Podman & \texttt{devicemapper} & block based & direct-lvm\tablefootnote{Note that this is a logical volume manager, not a file system, which uses in our case the xFS file system} \\
-      Docker/Podman & \texttt{btrfs} & block based & BTRFS\\
-      Docker/Podman & \texttt{zfs} & block based & zFS\\
-      Docker/Podman & \texttt{vfs} & no & any \\
-      \hline
-      LXD & \texttt{Btrfs} & block based & BTRFS\\
-      LXD & \texttt{ZFS} & block based & zFS\\
-      LXD & \texttt{LVM} & yes & ext4\\
-      LXD & \texttt{Directory} & no & any \\
+      \texttt{overlay} & file based & ext4, xFS \\
+      \texttt{aufs} & file based & ext4, xFS \\
+      \texttt{devicemapper} & block based & direct-lvm\tablefootnote{Note that this is a logical volume manager, not a file system, which uses in our case the xFS file system} \\
+      \texttt{btrfs} & block based & BTRFS\\
+      \texttt{zfs} & block based & zFS\\
+      \texttt{vfs} & no & any \\
+      \texttt{directory} & no & any \\
+      \texttt{lvm} & block based & ext4 \\
       \hline
     \end{tabular}
   \end{center}
@@ -109,7 +106,7 @@ As we saw previously, creating a container requires to create a bunch of namespa
 There is also an intermediate solution, which actually map the root user of the container to an unpriviledged user on the host, as in the rootless case.  It means that processes running as root in the container won't be root on the host, which is already better, but the container runtime still runs as root.
 
 \section{Ecosystem overview}
-A small overview of the current container ecosystem can be found on Figure \ref{fig:overview}.  Note that solutions like Kubernetes\footnote{Kubernetes is "an open-source system for automating deployment, scaling, and management of containerized applications" \cite{kubernetes}} which are more oriented towards hosting and continuous deployment of container based applications than to single container provisionning are not presented here\footnote{A more detailed overview dor those kind of applications is provided by Containerd at the following address: \href{https://containerd.io/img/architecture.png}{https://containerd.io/img/architecture.png}}.
+A small overview of the current container ecosystem can be found on Figure \ref{fig:overview}.  Note that solutions like Kubernetes\footnote{Kubernetes is "an open-source system for automating deployment, scaling, and management of containerized applications" \cite{kubernetes}} which are more oriented towards hosting and continuous deployment of container based applications than to single container provisionning are not presented here\footnote{A more detailed overview for those kind of applications is provided by Containerd at the following address: \href{https://containerd.io/img/architecture.png}{https://containerd.io/img/architecture.png}}.
 \begin{figure}[h!]
   \begin{center}
     \includegraphics[width=\linewidth]{images/ecosystem.pdf}
@@ -120,11 +117,11 @@ A small overview of the current container ecosystem can be found on Figure \ref{
 \paragraph{}\textbf{OCI} (Open Container Initiative) is "an open governance structure for the express purpose of creating open industry standards around container formats and runtime."\cite{oci} They currently have two specifications: the format of the image that has to be given to an OCI compatible runtime, and the commands to interact with such runtime.
 
 \section{Containerisation solutions}
-\paragraph{}\textbf{Docker}\cite{merkel2014docker} is today probably the most known solution for containerization.  Since its apparition in 2014, its interest for the PaaS sector hasn't ceased to grow.  It consists in a daemon, running on the host, that allows to easily manage different containers.  It relies on Containerd, "An industry-standard container runtime with an emphasis on simplicity, robustness and portability"\cite{containerd}, which is a more complete container runtime than what I presented before, with embedded network management, storage driver management, and other mechanism.  Containerd is not meant to be used standalone though, which is why we still use Docker.  By default, Docker uses \texttt{runc} as container runtime by default, but is compatible with any runtime that fulfill the OCI\cite{oci} requirements.
+\paragraph{}\textbf{Docker}\cite{merkel2014docker} is today probably the most known container manager solution for containerization.  Since its apparition in 2014, its interest for the PaaS sector hasn't ceased to grow.  It consists in a daemon, running on the host, that allows to easily manage different containers.  It relies on Containerd, "An industry-standard container runtime with an emphasis on simplicity, robustness and portability"\cite{containerd}, which is a more complete container runtime than what I presented before, with embedded network management, storage driver management, and other mechanism.  Containerd is not meant to be used standalone though, which is why we still use Docker.  By default, Docker uses \texttt{runc} as container runtime, but is compatible with any runtime that fulfill the OCI\cite{oci} requirements.
 
 The main advantages of Docker are its simplicity of use, its production-grade quality, the huge fleet of ready-to-run containers publicly available and a lot of useful tools (like \texttt{docker-swarm} that come along with it).  This is the solution currently used by INGInious.
 
-\paragraph{}"\textbf{Podman} is a daemonless container engine for developing, managing, and running OCI\cite{oci} Containers on your Linux System."\cite{podman}  Podman presents itself as a viable true alternative to Docker.  Its main difference is the fact that it runs daemonless, it runs containers as detached child processes and containers can be rootless by default (while it is only a recent feature coming up to Docker).  It can also manage pods, which are groups of containers deployed on the same machine. Its default runtime is \texttt{runc} as well.  Podman is an Open-Source project, and is still growing a lot, the latest version at this day (2020-02-28) is v1.8.0, released 21 days ago, and already 287 commits have been done since then!
+\paragraph{}"\textbf{Podman} is a daemonless container engine for developing, managing, and running OCI\cite{oci} Containers on your Linux System."\cite{podman}  Podman presents itself as a viable true alternative to Docker.  Its main difference is the fact that it runs daemonless, it runs containers as detached child processes and containers can be rootless by default (while it is only a recent feature coming up to Docker).  It can also manage pods, which are groups of containers deployed on the same machine. Its default runtime is \texttt{runc} as well.  Podman is an Open-Source project, and is still growing a lot, the latest version at this day (2020-05-30) is v1.9.3, released 8 days ago, and already 797 commits have been done since then!
 
 \paragraph{}"\textbf{LXC} is a userspace interface for the Linux kernel containment features."\cite{lxc}  This solution is developed and maintained by Canonial Ltd.  Docker used to be based on LXC until it created its own execution environment.  LXC came out recently with a new solution; LXD, which offer about the same things as Docker does.  A bunch of ready to run images publicly available, and a nice command line interface to interact with containers.  The only missing feature of LXD compare to Docker, regadering our use case, is the possibility to launch a container with a command, and stop it when it is finished.  LXC actually start a complete init process for each container, in which you can then come and execute your command.
 
@@ -132,7 +129,7 @@ The main advantages of Docker are its simplicity of use, its production-grade qu
 
 \paragraph{}\textbf{OpenVZ}\cite{openvz} is another container-based virtualisation solution.  But this time they use namespaces to provide it.  They also have their own way of dealing with system resources management, more complete than cgroup.  Even though this is more close to what runc and LXC provide in therm of isolation, this is still not the kind of experience appropriate for INGInious use case.  This is designed, as for Linux-VServer, for a more complete server experience.
 
-\paragraph{}\textbf{Kata Containers} is not another container manager.  It is an OCI compatible runtime.  With the specificity that it doesn't run mainstream containers as \texttt{runc}, but actually lightweight virtual machines, using KVM virtualisation and with Qemu (originally), Firecracker or Cloud Hypervisor (still in its early days) as hypervisor.  Those two first currently available hypervisor are not really equivalent though, as the original one has more features (like devices assignment) and the second one has lower memory footprint, smaller attack surface (smaller code base), and a shorter boot time.
+\paragraph{}\textbf{Kata Containers} is not another container manager.  It is an OCI compatible runtime.  With the specificity that it doesn't run mainstream containers as \texttt{runc}, but actually lightweight virtual machines, using KVM virtualisation and with Qemu (originally), Firecracker or Cloud Hypervisor (still in its early days) as hypervisor.  Those two first currently available hypervisor are not really equivalent though, as the original one has more features (like devices assignment) and the second one has lower memory footprint and smaller attack surface (smaller code base).
 They put forward four features of their solution:
 \begin{itemize}
 \renewcommand\labelitemi{--}
