@@ -1,134 +1,75 @@
-\chapter{Measurements}
+\chapter{Results interpretation}
 
-In this chapter, based on the results of the tests presented in the previous chapter, I will try to answer several questions:
+Based on the results of the different experiments I made, I will try to answer in this chapter to three main questions:
 \begin{enumerate}
-  \item What is the influence of each storage driver on the performance, which one is the best for us?
-  \item What is the influence of each container runtime on the performance, which one is the best for us?
-  \item What is the influence of each container manager on the performance, which one is the best for us?
-  \item What is the influence of each base image on the performance, which one is the best for us?
-  \item Does the a rootless container have any performance drawback over a rootfull one?
+  \item Compared to other available solutions, how good is the current configuration chosen by INGInious to face the responsiveness challenge of the platform?  How much better could it be?  How easy would it be to improve it?
+  \item Could there be a solution tailor-made for the specific case of INGInious?  What would it be?  What would it take to use it?
+  \item What would be the cost of providing a stronger/safer isolation to the containers used by INGInious?  What opportunities could it bring?
 \end{enumerate}
 
-Based on that, I will try to compose the best solution that should be used in the case of INGInious.
+\section{Current INGInious situation}
+We will here consider the first question:
+\begin{center}
+  \say{\textit{Compared to other available solutions, how good is the current configuration chosen by INGInious to face the responsiveness challenge of the platform?  How much better could it be?  How easy would it be to improve it?}}
+\end{center}
 
-\section{Variabilities influence}
-
-\subsection{Storage driver}
-In order to determine the influence of the choice of one storage driver over another, we will concentrate over the results of some of them to the different I/O tests: Large amount of file read and write, and Big file read and write.
-We won't be comparing each possible configuration here, I have selected the 16 of them, which are representative enough of the others.  
-
-\clearpage
-\subsubsection{Default Docker's case}
-We will first start by comparing the six storage drivers proposed by Docker, using as common configuration:
-
+The current configuration of INGInious is the following:
+\begin{center}
 \begin{tabular}{rl}
-   \textbf{Container manager} & Docker \\
-   \textbf{Container runtime} & runc \\
-   \textbf{Base image} & Alpine \\
-   \textbf{Control group} & v1 \\
-   \textbf{Rootless} & No 
+  \textbf{Container manager} & Docker \\
+  \textbf{Base image} & Centos \\
+  \textbf{Storage driver} & overlay2 \\
+  \textbf{Container runtime} & runc \\
+  \textbf{Control group version} & v1 \\
+  \textbf{Rootless containers} & no \\
 \end{tabular}
+\end{center}
 
-This configuration shows similar results as if we changed runc for crun or if we changed Docker for Podman.  The values vary, but the storage driver behave the same way, relatively to one another.
+This configuration is quite decent, and gives good performances, their is mainly one change that can improve those.  But let's analyse this step by step.
 
+\subsubsection{Storage driver}
+Overlay2 (referenced later as simply overlay) is the storage driver that Docker recommands to use by default (when OverlayFS is supported on the host).  Its layer mechanism allows to limit the redundancy of information when you use the same base image to create different images.  And its file-based copy-on-write strategy gives overal good performances.
 
 \begin{figure}[h!]
-    \begin{subfigure}{.5\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-execution-Docker-alpine-runc---Database-read.png}
-      \caption{Execution time of containers used for database reading performance test.}
-      \label{fig:storage-driver:runc:db-read-exec}
-    \end{subfigure}
-    \begin{subfigure}{.5\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-execution-Docker-alpine-runc---Database-write.png}
-      \caption{Execution time of containers used for database reading performance test.}
-      \label{fig:storage-driver:runc:db-write-exec}
-    \end{subfigure}
-    
-    \begin{subfigure}{.5\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-full-Docker-alpine-runc---Database-read.png}
-      \caption{Creation, startup and execution time of containers used for database reading performance test.}
-      \label{fig:storage-driver:runc:db-read-full}
-    \end{subfigure}
-    \begin{subfigure}{.5\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-full-Docker-alpine-runc---Database-write.png}
-      \caption{Creation, startup and execution time of containers used for database writing performance test.}
-      \label{fig:storage-driver:runc:db-write-full}
-    \end{subfigure}
-    
-    \caption{Database read and write tests for containers launched with Docker and runc, based on an Alpine image}
+  \begin{center}
+    \includegraphics[width=\linewidth]{images/question-1-storage-driver-Docker-centos-runc---Database-write.png}
+    \caption{Storage driver performance comparison for Centos container, launched with Docker and runc}
+    \label{fig:q1:storage-driver}
+  \end{center}
 \end{figure}
 
-\begin{figure}[!h]
-    \begin{subfigure}{.5\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-creation-Docker-alpine-runc---IO-read.png}
-      \caption{Average creation time of containers depending on the number of files in one folder.}
-      \label{fig:storage-driver:runc:io-read-create}
-    \end{subfigure}
-    \begin{subfigure}{.5\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-creation-Docker-alpine-runc---IO-write.png}
-      \caption{Average creation time of containers depending on the size of the archive containing all the files.}
-      \label{fig:storage-driver:runc:io-write-create}
-    \end{subfigure}
-    
-    % \begin{subfigure}{.5\textwidth}
-    %   \centering
-    %   \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-startup-Docker-alpine-runc---IO-read.png}
-    %   \caption{Starting time of containers used for IO reading performance test.}
-    %   \label{fig:storage-driver:runc:io-read-start}
-    % \end{subfigure}
-    % \begin{subfigure}{.5\textwidth}
-    %   \centering
-    %   \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-startup-Docker-alpine-runc---IO-write.png}
-    %   \caption{Starting time of containers used for IO writing performance test.}
-    %   \label{fig:storage-driver:runc:io-write-start}
-    % \end{subfigure}
-    
-    \begin{subfigure}{.5\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-execution-Docker-alpine-runc---IO-read.png}
-      \caption{Average total reading time for n files.}
-      \label{fig:storage-driver:runc:io-read-exec}
-    \end{subfigure}
-    \begin{subfigure}{.5\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-execution-Docker-alpine-runc---IO-write.png}
-      \caption{Average extracting time of n files from one (non-compressed) archive.}
-      \label{fig:storage-driver:runc:io-write-exec}
-    \end{subfigure}
-    
-    \begin{subfigure}{.5\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-full-Docker-alpine-runc---IO-read.png}
-      \caption{Average creation, startup and execution time of containers used for IO reading performance test.}
-      \label{fig:storage-driver:runc:io-read-full}
-    \end{subfigure}
-    \begin{subfigure}{.5\textwidth}
-      \centering
-      \includegraphics[width=\linewidth]{images/storage-driver/storage-driver-full-Docker-alpine-runc---IO-write.png}
-      \caption{Average creation, startup and execution time of containers used for IO reading performance test.}
-      \label{fig:storage-driver:runc:io-write-full}
-    \end{subfigure}
-    
-    \caption{IO read and write tests for containers launched with Docker and runc, based on an Alpine image}
-\end{figure}
+On Figure \ref{fig:q1:storage-driver}, we can see how much it cost to have a full-copy mechanism like vfs for each container creation.  We can also see that overlay, aufs and btrfs offers similar performances for the creation.  The main differences between those three is shown by their performance when solicitating I/O.  
+\begin{itemize}
+  \item Aufs, even though performing similarly to overlay in all the other cases (not shown here) and relying on the same union file system mechanism as overlay, gets far behind the latest when a lot of read operations are done.  This most likely comes from one big difference in the implementation of those two union file system: when a file is opened with OverlayFS, all the operations on it are directly managed by the underlying file systems.  This simplify the implementation, and improve the performances quite a lot as we can see on the second graph of the figure.  (For this test, for each \texttt{openat} system call, four \texttt{read} system call are done)
+  \item On the last graph of the figure (on the right), we can see the advantage of using block-based copy-on-write, when modifying big files.  Indeed, when doing so, where overlay and aufs will need to copy the whole file before modifying it, the other solutions will only need to copy the file system blocks needing to be modified (or not even copy the file in the case of vfs).  We can see that devicemapper handles this a little bit better than btrfs, but given the much higher container creation cost of the first one, it will most likely be more intersting to use btrfs in most cases.
+\end{itemize}
+One more reason to justify the use of overlay is that in most container use cases, read operations are the most important ones.  Normally, no large amount of data should be written in the container file systems, volumes (external storage from the host, mounted into the container file system) should specifically be used for that purpose as it provide nearly native writing performances and the data persists, even after the end of the container life cycle.
 
-On those figures we can observe the following things:
-\begin{enumerate}
-  \item As vfs as no copy on write mechanism, it has to copy all the data editable in the container for each container creation.  This gives it a drawback over the other solutions with copy on write capabilities, and it get worse as the size of the container grows.  We can see that on both Figure \ref{fig:storage-driver:runc:io-read-create} and Figure \ref{fig:storage-driver:io-write-create}.
-  \item Overlayfs and AUFS are both union filesystems, and their corresponding storage driver perform similarily in most cases.  On Figure \ref{fig:storage-driver:runc:io-read-exec} and Figure \ref{fig:storage-driver:runc:io-write-exec} we can see that this changes, aufs is far behind overlay.  This is because of one significant difference in their implementation; when a file is open with Overlayfs, all the following actions performed on it (read/write) will be directly transfered to the underlying filesystem, overlay has no hand on it.  This is not the case with AUFS, and it is paid heavily when a lot of I/O has to be done.
-  \item As vfs as already copied all files on container creation, it is unbeatable for file creation (Figure \ref{fig:storage-driver:runc:io-write-exec}).  The next faster solution is overlay, which even meet vfs performance when it comes to read small files (Figure \ref{fig:storage-driver:runc:io-read-exec}).  This makes overlay the best solution for reading and creating a lot of files, as it has no creation cost, and its file-based copy on write mechanism is apparently the most efficient for those cases.
-  \item Devicemapper, btrfs and zfs have block-based copy on write, and in the case of devicemapper and btrfs it gives a great advantage when applying modification to big files.  Indeed with such strategy only the blocks that are modified needs to be copied, while other file-based copy-on-write mechanism will have to copy the whole file.  We can see on Figure \ref{fig:storage-driver:runc:db-write-exec} that they even manage to beat vfs.  Btrfs should be chosen over devicemapper though, as we can see in Figure \ref{fig:storage-driver:runc:db-write-full}, this is because devicemapper containers have a greater creation and starting cost.
-\end{enumerate}
+\subsubsection{Base image}
 
-% \paragraph{}\textbf{In really short, what storage driver is the more performant?}
-% Overlay it the best solution for most scenarios.  For the specific case of big file modification, block-based copy-on-write mechanism are better though, in this case choose btrfs over devicemapper (not supported anymore by Docker since v19.03, and higher container creation cost).
+\subsubsection{Container runtime}
 
+\subsubsection{Container manager}
+
+\subsubsection{Final configuration}
+
+\begin{center}
+\begin{tabular}{rl}
+  \textbf{Container manager} & Docker \\
+  \textbf{Base image} & Alpine/Centos \\
+  \textbf{Storage driver} & overlay2 \\
+  \textbf{Container runtime} & crun \\
+  \textbf{Control group version} & v1 \\
+  \textbf{Rootless containers} & no \\
+\end{tabular}
+\end{center}
+
+As we can see, the final configuration is not that much different from the original one.  The quick answer to the original questions would be:
+\paragraph{}\textit{Compared to other available solutions, how good is the current configuration chosen by INGInious to face the responsiveness challenge of the platform?}  The current configuration is good.  It could be improved, but is definitely not the worse one.  The choice of going with Docker was the most soundfull when INGInious was created, and it is still the case now.  The current storage driver offers great performances for almost every cases, only some specific case, sollicitating a lot of IO operations on big files, can give an advantage to another storage driver, btrfs.  The choice of a Centos base image is not bad either, but the size of the image being greater than Alpine's one, except for the situations where Centos offered better write performances, using Alpine seems to be better.  The move here might then be to go for an hybrid solution, using Centos only in situations where its small writing performance advantage become meaningfull.  
+\paragraph{}\textit{How much better could it be?}  As we have seen, changing the current container runtime makes a significant difference.  The c implementation of \texttt{crun} is claimed to be twice as fast as the go implementation of \texttt{runc} by \texttt{crun}'s contributors.  And we can definitely see the difference.  The change of base Image though doesn't show as obvious improvement.
+\paragraph{}\textit{How easy would it be to improve it?}  This is the real good news, it truely is super easy to apply the most significant change.  You only need to install \texttt{crun}, reconfigure Docker to use it by default, and you are good to go, no change as to be done to INGInious!  For the base of the base image the story is different though, as it would require to change all the containers images, which is a lot of work.
+
+\section{Variabilities influence}
 
 \clearpage
 \subsubsection{Kata-container's case}
