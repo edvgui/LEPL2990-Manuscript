@@ -126,3 +126,39 @@ As we can see, the final configuration is not that much different from the origi
 \paragraph{}\textit{How much better could it be?}  As we have seen, changing the current container runtime makes a significant difference.  The c implementation of \texttt{crun} is claimed to be twice as fast as the go implementation of \texttt{runc} by \texttt{crun}'s contributors.  And we can definitely see the difference.  The change of base Image though doesn't show as obvious improvement.
 \paragraph{}\textit{How easy would it be to improve it?}  This is the real good news, it truely is super easy to apply the most significant change.  You only need to install \texttt{crun}, reconfigure Docker to use it by default, and you are good to go, no change as to be done to INGInious!  For the base of the base image the story is different though, as it would require to change all the containers images, which is a lot of work.
 
+\section{INGInious ideal solution}
+We will here consider the second question:
+\begin{center}
+  \say{\textit{Could there be a solution tailor-made for the specific case of INGInious?  What would it be?  What would it take to use it?}}
+\end{center}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=\linewidth]{images/question-2-hello-world.png}
+    \caption{Ideal INGInious container manager solution compared to existing ones, Hello World test}
+    \label{fig:q2:hello-world}
+  \end{center}
+\end{figure}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=\linewidth]{images/question-2-io.png}
+    \caption{Ideal INGInious container manager solution compared to existing ones, IO tests}
+    \label{fig:q2:io}
+  \end{center}
+\end{figure}
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=\linewidth]{images/question-2-db.png}
+    \caption{Ideal INGInious container manager solution compared to existing ones, Database tests}
+    \label{fig:q2:db}
+  \end{center}
+\end{figure}
+
+\section{INGInious opportunities}
+We will here consider the last question:
+\begin{center}
+  \say{\textit{What would be the cost of providing a stronger/safer isolation to the containers used by INGInious?  What opportunities could it bring?}}
+\end{center}
+
