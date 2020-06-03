@@ -90,7 +90,7 @@ Then we have the Kata Containers solutions, based on virtualization.  It obvious
 
 \subsubsection{Container manager}
 
-On Figure \ref{fig:q1:manager} are shown the different container manager considered in the experiements, in their most performant configuration.  Docker and Podman using crun as runtime, and overlay or btrfs as storage driver.  LXD uses lxc as runtime and btrfs as storage driver.
+On Figure \ref{fig:q1:manager} are shown the different container manager considered in the experiements, in the configuration that my tests revealed as most performant.  Docker and Podman using crun as runtime, and overlay or btrfs as storage driver.  LXD uses lxc as runtime and btrfs as storage driver.
 
 \begin{figure}[h!]
   \begin{center}
@@ -100,11 +100,9 @@ On Figure \ref{fig:q1:manager} are shown the different container manager conside
   \end{center}
 \end{figure}
 
-We can see that Docker is still the best solutions for us, even though none of the other solution presents really bad performances.  Given the relatively young age of Podman, its focus might not be yet fully on performances, but rather on functionnalities.  We can then hope for improvements on this side as time goes, it would be worth check on them later this year, or the next one.  Some interesting things to note regarding Podman's rootless solution:
-\begin{itemize}
-  \item There is a cost to create, start and execute command into rootless containers with Podman compared to going rootfull with the same container manager.  This is very likely caused by the extra steps required to be taken to launch rootless container with all the functionnalities of a rootfull one.  Podman needs first to unshare user and mount namespaces, to be able to make bind mounts on the container filesystem.  It also requires to add a cgroup scope to all the commands that setup the containers, to be sure that the container runtime will later be able to move process created to the cgroup attached to the container.
-  \item Because of the lack of \textit{real} root permissions on the machine, rootless containers can not use OverlayFS, instead they use a fuse implementation of the latest, which, as we can see on the right-most graph, induces great performances cost.  It get even worse when doing write operations.
-\end{itemize}
+We can see that Docker is still the best solutions for us, even though none of the other solution presents really bad performances.  Given the relatively young age of Podman, its focus might not be yet fully on performances, but rather on functionnalities, catching up all the things that the two other alternatives already have.  We can then hope for improvements on this side as time goes, it would be worth check on them later this year, or the next one.  
+
+All those three solutions are reliable, have a great support, and a community to back them up.  LXD is maintained by canonical, which makes it a great fit for Ubuntu environments.  Docker is maintained by Docker Inc. and also seem to bring greater support for Ubuntu.  Podman is supported by the containers\footnote{\href{https://github.com/containers}{https://github.com/containers}} organization and is served as default Docker alternative on Fedora.  Using Podman on Ubuntu has been a bit more complicated than the two others, especially for the rootless solution, which requires cgroupv2.  Thankfully the community offered great support for all of my problems, and in most cases the issues appeared to be with systemd or Ubuntu, rather than with Podman.
 
 \subsubsection{Final configuration}
 
@@ -179,10 +177,57 @@ On Figure \ref{fig:q2:db} we see that this solution isn't magical though, copyin
   \item Integrate all the mangement of the steps of creation and execution of containers in one reliable tool.  For that we don't need to start from scratch, it might be worth taking a look at conmon\footnote{Conmon is the container runtime monitor on which podman rely.  \href{https://github.com/containers/conmon}{https://github.com/containers/conmon}}.
 \end{itemize}
 
-Whether the performance improvement of this solution is worth the effort it would require is not my call to make. I like that idea, and think it would make a great project, but I would also cost a lot of time to set up.
+Whether the performance improvement of this solution is worth the effort it would require is not my call to make. I like that idea, and think it would make a great project, but I would also cost a lot of time to set up and maintain.
 
 \section{INGInious opportunities}
 We will here consider the last question:
 \begin{center}
   \say{\textit{What would be the cost of providing a stronger/safer isolation to the containers used by INGInious?  What opportunities could it bring?}}
 \end{center}
+
+By saying "\textit{providing a stronger-safer isolation}" what I mean is more mitigating the risk we take when we let a student execute code in a container, on the host where the platform is running.  The most unsafe solution (still making use of containers) is to run the container as root, with the root user of the container in the hand of the student, and mapped to the root of the host.  In theory this doesn't do any harm, but given past vulnerabilities that have been found in runc it can happen.  To mitigate this, INGInious currently creates a new user in the container, which has no root priviledge (neither inside the container nor outside of it), for the student code to execute.  This limits the range of possibilities of task to evaluate with INGInious.  We cannot for example simulate a cluster of machine where the student has root access in order to deal with any network assignment.
+
+\subsubsection{Rootless containers}
+\paragraph{}The first possibility to improve this situation is to go with rootless containers.  We have two alternatives for this: Podman's rootless containers and LXD unpriviledged containers.  Docker is also working on a solution but has only limited support for now.  With rootless containers, not only the root inside the container isn't root on the host, but also the container runtime isn't running as root, which limits a lot the damage that can be done to the infrastructure if a vulnerability in the container runtime is found and exploited.  It also mitigate potential attacks the other way arround, for a user on the host that would try to gain root access through a vulnerability of the container manager.  This is only valid for Podman though, as LXD's daemon is running as root, even for unpriviledged containers.  Podman could then be installed on student's machine in computer rooms without too much concern.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=\linewidth]{images/question-3-rootless-io.png}
+    \caption{Overhead of rootless containers compared to rootfull ones, IO tests}
+    \label{fig:q3:rootless:io}
+  \end{center}
+\end{figure}
+
+Unfortunetly, having rootless containers also comes with a cost as we can see on Figure \ref{fig:q3:rootless:io}.
+\begin{itemize}
+  \item There is a cost to create, start and execute command into rootless containers with Podman compared to going rootfull with the same container manager.  This is very likely caused by the extra steps required to be taken to launch rootless container with all the functionnalities of a rootfull one.  Podman needs first to unshare user and mount namespaces, to be able to make bind mounts on the container filesystem.  It also requires to add a cgroup scope to all the commands that setup the containers, to be sure that the container runtime will later be able to move process created to the cgroup attached to the container.
+  \item Because of the lack of \textit{real} root permissions on the machine, rootless containers can not use OverlayFS, instead they use a fuse implementation of the latest, which, as we can see on the right-most graph, induces great performances cost.  It get even worse when doing write operations.
+  \item One limitation of rootless container is also the options available for managing the storage of containers (storage drivers), for example devicemapper isn't available.
+\end{itemize}
+
+\subsubsection{Virtualization}
+\paragraph{}Another solution is to simply strengthen the isolation that protects the host from the student.  And the best solution to do this is to make use of virtualization.  Kata Containers is a great deal for us, it allows us to keep the infrastructure of the platform, only changing the runtime used by Docker, and everything can still be used as before.  Once again, this stonger isolation level could open the gate to assignements that would require for the student to have root access in the container.
+
+\paragraph{}However, as we already saw earlier when comparing runtimes, virtualization adds a cost, mainly to container startup, but also on creation and execution.
+
+On Figure \ref{fig:q3:virtualization:io}, we can notice that unlike for crun, the overlay storage driver behave way worse than devicemapper.  This is actually also the case for all other storage drivers too, it seems that runtime solutions with virtualization take much more advantage of devicemapper than other drivers.  And passed a certain point, Kata Containers using Qemu even perform better than crun, both in read (compared to crun with devicemapper) and write (compared to crun with overlay or devicemapper).
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=\linewidth]{images/question-3-virtualization-io.png}
+    \caption{Cost of virtualization on container creation and execution, IO tests}
+    \label{fig:q3:virtualization:io}
+  \end{center}
+\end{figure}
+
+We can make the same observation on Figure \ref{fig:q3:virtualization:db} with the excpetion than, for some reason, Kata Containers using Firecracker seems to handle read operations on big files much better than when using Qemu.
+
+\begin{figure}[h!]
+  \begin{center}
+    \includegraphics[width=\linewidth]{images/question-3-virtualization-db.png}
+    \caption{Cost of virtualization on container creation and execution, IO tests}
+    \label{fig:q3:virtualization:db}
+  \end{center}
+\end{figure}
+
+One more great thing about Kata Containers is that every container in the same pod (group of containers, linked together, that serves a common global purpose) will actually be grouped inside the same vm (still in separate containers), this will reduce the overhead by container caused by virtualization as the size of the pod grows.  This could be convenient for assignment where multiple containers needs to be managed by a single student.  Unfortunetly, to make use of this feature, the container manager needs to have some kind of pod mechanism, which isn't the case of Docker.  Podman, Kubernetes or others can do that.
