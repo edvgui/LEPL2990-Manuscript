@@ -3,7 +3,7 @@
 Based on the results of the different experiments I made, I will try to answer in this chapter to three main questions:
 \begin{enumerate}
   \item Compared to other available solutions, how good is the current configuration chosen by INGInious to face the responsiveness challenge of the platform?  How much better could it be?  How easy would it be to improve it?
-  \item Could there be a solution tailor-made for the specific case of INGInious?  What would it be?  What would it take to use it?
+  \item Could there be a solution tailor-made for the specific case of INGInious?  What would it be?  What would it cost to use it?
   \item What would be the cost of providing a stronger/safer isolation to the containers used by INGInious?  What opportunities could it bring?
 \end{enumerate}
 
@@ -28,7 +28,7 @@ The current configuration of INGInious is the following:
 This configuration is quite decent, and gives good performances, their is mainly one change that can improve those.  But let's analyse this step by step.
 
 \subsubsection{Storage driver}
-Overlay2 (referenced later as simply overlay) is the storage driver that Docker recommands to use by default (when OverlayFS is supported on the host).  Its layer mechanism allows to limit the redundancy of information when you use the same base image to create different images.  And its file-based copy-on-write strategy gives overal good performances.
+Overlay2 (referenced for the rest of this discussion as simply overlay) is the storage driver that Docker recommands to use by default (when OverlayFS is supported on the host).  Its layer mechanism allows to limit the redundancy of information when you use the same base image to create different images.  And its file-based copy-on-write strategy gives overal good performances.
 
 \begin{figure}[h!]
   \begin{center}
@@ -102,7 +102,7 @@ On Figure \ref{fig:q1:manager} are shown the different container manager conside
 
 We can see that Docker is still the best solutions for us, even though none of the other solution presents really bad performances.  Given the relatively young age of Podman, its focus might not be yet fully on performances, but rather on functionnalities.  We can then hope for improvements on this side as time goes, it would be worth check on them later this year, or the next one.  Some interesting things to note regarding Podman's rootless solution:
 \begin{itemize}
-  \item There is a cost to create rootless containers with Podman compared to going rootfull with the same container manager.  This is very likely caused by the extra steps required to be taken to launch rootless container with all the functionnalities of a rootfull one.  Podman needs first to unshare user and mount namespaces, to be able to make bind mounts on the container filesystem.  It also requires to add a cgroup scope to all the commands that setup the containers, to be sure that the container runtime will later be able to move process created to the cgroup attached to the container.
+  \item There is a cost to create, start and execute command into rootless containers with Podman compared to going rootfull with the same container manager.  This is very likely caused by the extra steps required to be taken to launch rootless container with all the functionnalities of a rootfull one.  Podman needs first to unshare user and mount namespaces, to be able to make bind mounts on the container filesystem.  It also requires to add a cgroup scope to all the commands that setup the containers, to be sure that the container runtime will later be able to move process created to the cgroup attached to the container.
   \item Because of the lack of \textit{real} root permissions on the machine, rootless containers can not use OverlayFS, instead they use a fuse implementation of the latest, which, as we can see on the right-most graph, induces great performances cost.  It get even worse when doing write operations.
 \end{itemize}
 
@@ -129,36 +129,60 @@ As we can see, the final configuration is not that much different from the origi
 \section{INGInious ideal solution}
 We will here consider the second question:
 \begin{center}
-  \say{\textit{Could there be a solution tailor-made for the specific case of INGInious?  What would it be?  What would it take to use it?}}
+  \say{\textit{Could there be a solution tailor-made for the specific case of INGInious?  What would it be?  What would it cost to use it?}}
 \end{center}
+
+The different container manager presented here are very versatile solutions, they all have a great package of functionnalities that allows them to deal with a wide range of different applications.  This is good for them, but bad for us, as we don't need most of those functionnalities, but still pay the cost through a more heavy container manager.
+
+The workload that INGInious handles with its container manager is not that extensive, it is actualy even quite redundant, and predictible, as each student's code is expected to have a specific behavior.  And that expected behavior can actually define in advance, which files in the container filesystem are going to be modified, and which aren't.  We can play with that knowledge.
+
+I have then created a small concept alternative solution, that would just fit the needs of INGInious, and provide better performances.  It relies on two things:
+\begin{enumerate}
+  \item We don't need a fully functionnal and grown up container manager. Our needs are simply containers, with resource management.  Those are provided by tools like crun and runc and cgroup v1 and v2.  We could then gain performance by only using those.
+  \item We don't need a complete writable filesystem for each container, we can restrict write access to certain parts of it.  Which means that we could copy the file that will be modified, when creating the container (avoiding the need of using any copy-on-write mechanism), and bind-mount the rest of it, with read-only permissions.
+\end{enumerate}
 
 \begin{figure}[h!]
   \begin{center}
     \includegraphics[width=\linewidth]{images/question-2-hello-world.png}
-    \caption{Ideal INGInious container manager solution compared to existing ones, Hello World test}
+    \caption{Ideal INGInious container manager solution compared to the current configuration of the platform and to the recommended new solution, Hello World test}
     \label{fig:q2:hello-world}
   \end{center}
 \end{figure}
 
+On Figure \ref{fig:q2:hello-world} we can see that the gain in performance is real, and we didn't give up any of the key requirement of INGInious.  We have the same level of isolation that Docker provides as we rely on crun, we even made it one step further as this solution is completely rootless.
+
 \begin{figure}[h!]
   \begin{center}
     \includegraphics[width=\linewidth]{images/question-2-io.png}
-    \caption{Ideal INGInious container manager solution compared to existing ones, IO tests}
+    \caption{Ideal INGInious container manager solution compared to the current configuration of the platform and to the recommended new solution, IO tests}
     \label{fig:q2:io}
   \end{center}
 \end{figure}
 
+On Figure \ref{fig:q2:io} we can see that the only battle we loose is with the current INGInious solutions for the write test, as its \texttt{tar} implementation is more efficient.  Otherwise, reading file is way fatser when you don't need to manage differet layer of your file system as with overlay, and writing is faster too as, again, we don't need to care about different layers.
+
 \begin{figure}[h!]
   \begin{center}
     \includegraphics[width=\linewidth]{images/question-2-db.png}
-    \caption{Ideal INGInious container manager solution compared to existing ones, Database tests}
+    \caption{Ideal INGInious container manager solution compared to the current configuration of the platform and to the recommended new solution, Database tests}
     \label{fig:q2:db}
   \end{center}
 \end{figure}
+
+On Figure \ref{fig:q2:db} we see that this solution isn't magical though, copying file before editing them is still costly.  But doing this when creating the container still provides overal better performances than copying the file to a higher layer as overlay just before writing it.  The only alternative that could beat us for more extreme situations are block-based copy-on-write solutions, as they won't copy the whole file.  That being said, we could probably improve this solution by making use of that feature too, relying on an underlying filesystem that has such capabilities.
+
+\paragraph{}Here we have a solution tailored-made for INGInious then.  But it doesn't mean we should actually use it.  What I presented here was a working prototype, not a realiable solution, a lot of work has still to be done to make it work easily and integrate it into INGInious.  Among that work you can count the following things:
+\begin{itemize}
+  \item Determine for each container which should be the writable part of the file system.  And eventually optimize those images by centralizing all the writable content.
+  \item Create a new image management system.  We don't need to go from scratch though, Buildah\footnote{Buildah is a tool that allows to easily build and manage OCI images. \href{https://github.com/containers/buildah}{https://github.com/containers/buildah}} could be used, and would even allow us to continue using Docker Hub to store images.
+  \item Integrate all the mangement of the steps of creation and execution of containers in one reliable tool.  For that we don't need to start from scratch, it might be worth taking a look at conmon\footnote{Conmon is the container runtime monitor on which podman rely.  \href{https://github.com/containers/conmon}{https://github.com/containers/conmon}}.
+\end{itemize}
+
+Whether the performance improvement of this solution is worth the effort it would require is not my call to make. I like that idea, and think it would make a great project, but I would also cost a lot of time to set up.
 
 \section{INGInious opportunities}
 We will here consider the last question:
 \begin{center}
   \say{\textit{What would be the cost of providing a stronger/safer isolation to the containers used by INGInious?  What opportunities could it bring?}}
 \end{center}
-
