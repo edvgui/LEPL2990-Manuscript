@@ -2,7 +2,7 @@
 
 Based on the results of the different experiments I made, I will try to answer in this chapter to three main questions:
 \begin{enumerate}
-  \item Compared to other available solutions, how good is the current configuration chosen by INGInious to face the responsiveness challenge of the platform?  How much better could it be?  How easy would it be to improve it?
+  \item Compared to other available solutions, how good is the current configuration chosen by INGInious to face the responsiveness challenge of the platform?  How much better could it be?  How easy would it be to improve it?  Do some solutions involve tradeoffs in terms of maturity, support or maintainability?
   \item Could there be a solution tailor-made for the specific case of INGInious?  What would it be?  What would it cost to use it?
   \item What would be the cost of providing a stronger/safer isolation to the containers used by INGInious?  What opportunities could it bring?
 \end{enumerate}
@@ -46,6 +46,8 @@ On Figure \ref{fig:q1:storage-driver}, we can see how much it cost to have a ful
 \end{itemize}
 One more reason to justify the use of overlay is that in most container use cases, read operations are the most important ones.  Normally, no large amount of data should be written in the container file systems, volumes (external storage from the host, mounted into the container file system) should specifically be used for that purpose as it provide nearly native writing performances and the data persists, even after the end of the container life cycle.
 
+In terms of maintainability, one thing to pay attention to is that Docker sometimes stop the support for some storage drivers.  It already occured for devicemapper since version 19.03, and migth append soon for aufs too.
+
 \subsubsection{Base image}
 
 Alpine is quite popular in containers file systems.  Thanks to its minimalist default configuration, its image is really light compare to the ones of more complete file systems.  The Alpine base image provided by Docker is only $5.61$\texttt{MB}, while Centos's one is $203$\texttt{MB}.  But the size taken by images on disk isn't really something we worry about in our case.
@@ -88,6 +90,8 @@ Then we have the Kata Containers solutions, based on virtualization.  It obvious
   \item After some discussion with Kata Containers community\footnote{The full discussion can be found at this link: \href{https://github.com/kata-containers/runtime/issues/2642}{https://github.com/kata-containers/runtime/issues/2642}}, it turned out that Kata Containers make use of one feature of Qemu that Firecracker doesn't have, that would justify this difference in performance: vNVDIMM.  Thanks to vNVDIMM, the root file system of the guest VM is fully loaded in memory and directly accessed in it, which is faster than reading it from disk as Firecracker does.
 \end{enumerate}
 
+All those runtimes are completely mature alternatives, with great support, a community behind it and a large user base.  
+
 \subsubsection{Container manager}
 
 On Figure \ref{fig:q1:manager} are shown the different container manager considered in the experiements, in the configuration that my tests revealed as most performant.  Docker and Podman using crun as runtime, and overlay or btrfs as storage driver.  LXD uses lxc as runtime and btrfs as storage driver.
@@ -103,6 +107,8 @@ On Figure \ref{fig:q1:manager} are shown the different container manager conside
 We can see that Docker is still the best solutions for us, even though none of the other solution presents really bad performances.  Given the relatively young age of Podman, its focus might not be yet fully on performances, but rather on functionnalities, catching up all the things that the two other alternatives already have.  We can then hope for improvements on this side as time goes, it would be worth check on them later this year, or the next one.  
 
 All those three solutions are reliable, have a great support, and a community to back them up.  LXD is maintained by canonical, which makes it a great fit for Ubuntu environments.  Docker is maintained by Docker Inc. and also seem to bring greater support for Ubuntu.  Podman is supported by the containers\footnote{\href{https://github.com/containers}{https://github.com/containers}} organization and is served as default Docker alternative on Fedora.  Using Podman on Ubuntu has been a bit more complicated than the two others, especially for the rootless solution, which requires cgroupv2.  Thankfully the community offered great support for all of my problems, and in most cases the issues appeared to be with systemd or Ubuntu, rather than with Podman.
+
+One last point to give to Docker is also its documentation.  Even though their is also documentation for the other tools, it is much more complete on Docker's side.  And Docker being also the most popular solution, a lot of complementary informations, blog posts, stack overflow threads, are available online too.
 
 \subsubsection{Final configuration}
 
@@ -123,6 +129,7 @@ As we can see, the final configuration is not that much different from the origi
 \paragraph{}\textit{Compared to other available solutions, how good is the current configuration chosen by INGInious to face the responsiveness challenge of the platform?}  The current configuration is good.  It could be improved, but is definitely not the worse one.  The choice of going with Docker was the most soundfull when INGInious was created, and it is still the case now.  The current storage driver offers great performances for almost every cases, only some specific case, sollicitating a lot of IO operations on big files, can give an advantage to another storage driver, btrfs.  The choice of a Centos base image is not bad either, but the size of the image being greater than Alpine's one, except for the situations where Centos offered better write performances, using Alpine seems to be better.  The move here might then be to go for an hybrid solution, using Centos only in situations where its small writing performance advantage become meaningfull.  
 \paragraph{}\textit{How much better could it be?}  As we have seen, changing the current container runtime makes a significant difference.  The c implementation of \texttt{crun} is claimed to be twice as fast as the go implementation of \texttt{runc} by \texttt{crun}'s contributors.  And we can definitely see the difference.  The change of base Image though doesn't show as obvious improvement.
 \paragraph{}\textit{How easy would it be to improve it?}  This is the real good news, it truely is super easy to apply the most significant change.  You only need to install \texttt{crun}, reconfigure Docker to use it by default, and you are good to go, no change as to be done to INGInious!  For the base of the base image the story is different though, as it would require to change all the containers images, which is a lot of work.
+\paragraph{}\textit{Do some solutions involve tradeoffs in terms of maturity, support or maintainability?}  All of the solutions I explored here are reasonable to use, none of them has weak support or lack of maintainability or stability.  But as discussed, some storage driver might lose their support on Docker's side and Docker is better documented than the other container manager.
 
 \section{INGInious ideal solution}
 We will here consider the second question:
