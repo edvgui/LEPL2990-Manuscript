@@ -57,7 +57,7 @@ This is not the first time that someone tries to compare different containerizat
   \begin{center}
     \begin{tabular}{|p{.2\textwidth}|p{.1\textwidth}|p{.1\textwidth}|p{.1\textwidth}|p{.1\textwidth}|p{.1\textwidth}|p{.1\textwidth}|}
        \hline
-       \textbf{Name} & \textbf{Pub.} & \textbf{Update} & \textbf{Open-Source} & \textbf{Com.} & \textbf{Isol.} \\
+       \textbf{Name} & \textbf{Pub.}\footnotemark & \textbf{Update}\footnotemark & \textbf{Open-Source} & \textbf{Com.}\footnotemark & \textbf{Isol.}\footnotemark \\
        \hline
        SAND\cite{akkus2018sand} & 2018 & ? & ? & No & Cont. \\
        \hline
@@ -72,19 +72,10 @@ This is not the first time that someone tries to compare different containerizat
   \caption{Summary table of the different solutions explored in this chapter.}
   \label{tab:summary}
 \end{table}
-\paragraph{}\textbf{Caption}: 
-\begin{itemize}
-\renewcommand\labelitemi{--}
-  \item \textit{Name}: The name of the project.
-  \item \textit{Pub.}: The first publication year of the project.
-  \item \textit{Update}: The last update year of the project.
-  \item \textit{Open-source}: If the project is open-source.
-  \item \textit{Com.}: If the project is a "commercial grade" solution.
-  \item \textit{Isol.}: The type of isolation used in the project.
-  \item \textit{Cont.}: Isolation by containerization.
-  \item \textit{Virt.}: Isolation by virtualization.
-  \item \textit{Runt.}: Isolation by the runtime of the application.
-\end{itemize}
+\footnotetext[1]{The year of the publication of the project}
+\footnotetext[2]{The year of the last update on the project}
+\footnotetext[3]{Whether the solution has a "commercial grade" quality}
+\footnotetext[4]{The type of isolation of the solution; cont. for containerization, virt. for virtualization, runt. for runtime isolation}
 
 \section{My master thesis}
 In this chapter I presented an overview of the work of other people in the field of containerization, with a focus on performance improvement or measurement.  Though, we have more things to test, and more questions to ask than what those papers had to offer.
