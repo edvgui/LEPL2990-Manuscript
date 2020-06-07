@@ -132,7 +132,7 @@ The current configuration is good.  It could be improved but is definitely not t
 \paragraph{}\textit{How easy would it be to improve it?}  This is the real good news, it truely is super easy to apply the most significant change.  You only need to install \texttt{crun}, reconfigure Docker to use it by default, and we are good to go, no change as to be done to INGInious!  For the base of the base image the story is different though, as it would require to change all the containers images, which is a lot of work.
 \paragraph{}\textit{Do some solutions involve trade-offs in terms of maturity, support or maintainability?}  All of the solutions I explored here are reasonable to use, none of them have weak support or lack of maintainability or stability.  But as discussed, some storage driver might lose their support on Docker's side and Docker is better documented than the other container manager.
 
-\paragraph{}\textbf{Note about Http Serveur and Ping test}:  The results of the different configuration to those tests where not presented here and will not be shown later.  This is because no additional information could be extracted from those.  The performances to Http Server test are in pair for each configuration with its result to the Hello World test.  Regarding the Ping test, the variations where too small to assume a difference in performance rather than the varying network load.  If this test has to be reproduced, it might be interesting to ping a target in a private network that we have under control, rather than the internet. % TODO add reference to graphs on github
+\paragraph{}\textbf{Note about Http Serveur and Ping test}:  The results of the different configuration to those tests where not presented here and will not be shown later.  This is because no additional information could be extracted from those.  The performances to Http Server test are in pair for each configuration with its result to the Hello World test.  Regarding the Ping test, the variations where too small to assume a difference in performance rather than the varying network load.  If this test has to be reproduced, it might be interesting to ping a target in a private network that we have under control, rather than the internet. More graphs can be found on the repository of this project at this address: \href{https://github.com/edvgui/LEPL2990-Benchmark-tool/tree/master/plots}{https://github.com/edvgui/LEPL2990-Benchmark-tool/tree/master/plots}.
 
 \section{INGInious ideal solution}
 We will here consider the second question:
@@ -144,11 +144,13 @@ The different container managers presented here are very versatile solutions, th
 
 The workload that INGInious handles with its container manager is not that extensive, it is actually even quite redundant, and predictable, as each student's code is expected to have a specific behavior.  And that expected behaviour can actually define, in advance, which files in the container filesystem are going to be modified, and which are not.  We can play with that knowledge.
 
-I have then created a small concept alternative solution, Contingious, that would just fit the needs of INGInious, and provide better performances.  It relies on two things:
+I have then created a concept alternative solution, Contingious, that would just fit the needs of INGInious, and provide better performances.  It relies on two things:
 \begin{enumerate}
   \item We do not need a fully functional and grown up container manager. Our needs are simply containers, with resource management.  Those are provided by tools like crun and runc and cgroup v1 and v2.  We could then gain performance by only using those.
   \item We do not need a complete writable filesystem for each container, we can restrict write access to certain parts of it.  Which means that we could copy the file that will be modified, when creating the container (avoiding the need of using any copy-on-write mechanism), and bind-mount the rest of it, with read-only permissions.
 \end{enumerate}
+
+The full current implementation and some more impelmentation details can be found in the repository of this project at this address: \href{https://github.com/edvgui/LEPL2990-Benchmark-tool}{https://github.com/edvgui/LEPL2990-Benchmark-tool}.
 
 \begin{figure}[h!]
   \begin{center}

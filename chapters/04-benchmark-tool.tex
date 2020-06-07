@@ -28,7 +28,7 @@ The choice of going with a baremetal setup was not the original one.  But the ea
 \subsection{Configuration of the environment}
 As a lot of different solutions are going to be tested, and all of them with their own requirements (sometimes conflicting with the ones of other solutions), some work had to be done to make it easier for someone to replicate them.  The configuration of the environment is done with Ansible\footnote{https://docs.ansible.com/} playbooks, with one playbook for each solution to test.
 
-All the different configurations are presented in section \ref{subs:candidates}.  The different playbooks can be found in the repository of this project. % TODO add somewhere the link to the repository
+All the different configurations are presented in section \ref{subs:candidates}.  The different playbooks can be found in the repository of this project at this address: \href{https://github.com/edvgui/LEPL2990-Benchmark-tool/tree/master/ops}{https://github.com/edvgui/LEPL2990-Benchmark-tool/tree/master/ops}. 
 
 \section{Tests}
 As we already said previously, time is an important aspect in the experience INGInious provides to its users.  The time for a task to be evaluated and the time before this task is evaluated.  In order to improve those two, we will focus in those tests on the booting time of containers and their IO handling (still related to the time overhead that some solution could have compared to another).
