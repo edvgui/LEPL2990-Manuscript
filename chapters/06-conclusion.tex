@@ -1,10 +1,10 @@
 \chapter{Conclusion}
 
-In this manuscript I have questionned the current configuration that INGInious has chosen to face the responsiveness challenge of the platform.  I have identified different changes that could be made to it and chown whether or not they would be worth it.  The most intersting change would be to change the current container runtime in use, \texttt{runc}, to \texttt{crun}.
+In this manuscript I have questioned the current configuration that INGInious has chosen to face the responsiveness challenge of the platform.  I have identified different changes that could be made to it and shown whether or not they would be worth it.  The most interesting change would be to change the current container runtime in use, \texttt{runc}, to \texttt{crun}.
 
-I have also presented what would the best solution be for INGInious case and measured its performance gain over the best existing alternative.
+I have also presented what would be the best solution for INGInious case and measured its performance gain over the best existing alternative.  Showing that the difference we can still gain is significant.
 
-An finally I have discussed some of the safer isolation solutions that are existing, virtualization and rootless containerization.  Here is a really short summary of part of the configuration I tried, and what they are worth in terms of performance, isolation, ease of use and support (through documentation, community, forums).
+And finally I have discussed some of the safer isolation solutions that are existing, virtualization and rootless containerization.  Here is a really short summary of part of the configuration I tried, and what they are worth in terms of performance, isolation, ease of use and support (through documentation, community, forums).
 
 \begin{center}
   \begin{tabular}{|ccc|c|c|c|c|}
@@ -32,14 +32,14 @@ An finally I have discussed some of the safer isolation solutions that are exist
 As there is no bad solution, there is no bad score either, but the goal is to have as many "+" as possible.
 
 \subsubsection{Personal enrichment}
-A master thesis is much more than reading a bunch of paper, writing nice code and plotting some graphs.  It has been a real challenge to discover this whole new world that is containerization and I have learn much more things than what my results show.  It was my first time dealing with such a big project, and I was the only one directly contributing to it.  It required more planification than what I usually do.  It was also the first time that I wasn't relying on course support to learn new things, I had to find other thrustfull content and build my own knowledge of the situation.  This project has also been a great opportunity for me to enjoy the greatness of open-source. All the tools I have dealed with are open-source, and I could get support from the community when I required it, which was a big help and made me feel less alone in this.
+A master thesis is much more than reading a bunch of paper, writing nice code and plotting some graphs.  It has been a real challenge to discover this whole new world that is containerization and I have learn much more things than what my results show.  It was my first time dealing with such a big project, and I was the only one directly contributing to it.  It required more planification than what I usually do.  It was also the first time that I was not relying on course support to learn new things. I had to find other thrustful content and build my own knowledge of the situation.  This project has also been a great opportunity for me to enjoy the greatness of open-source. All the tools I have handled are open-source, and I could get support from the community when I required it, which was a big help and made me feel less alone in this.
 
 \subsubsection{Follow up questions}
 
-Even a year of work is not enough for me to cover everything on the subject I presented here.  Partly because the containerization world is continiously growing and new things to consider appear regularly.  And partly because I started this year with no experience or even basic knowledge on the subject, I didn't know from the start what I was going to do, and going further in my work hasn't ceased to open me new doors to look behind.  Here is then a small enumartion of thing that if I had one more year I would consider going into:
+Even a year of work is not enough for me to cover everything on the subject I presented here.  Partly because the containerization world is continuously growing and new things to consider appear regularly.  And partly because I started this year with no experience or even basic knowledge on the subject, I did not know from the start what I was going to do and going further in my work has not ceased to open me new doors to look behind.  Here is then a small enumeration of thing that if, I had one more year, I would consider going into:
 \begin{enumerate}
-  \item As the different tool I compared are continiously evolving, and new opportunities appear, the amount of configuration to consider grows really big.  It might be interesting to create a tool that could easily integreate in its benchmark new upcoming solutions.  It would allow to get periodically updated results as some tools grow.
-  \item LXD can also be used to manage virtual machines, I don't know how it works, what it realies on and if the performances are anywhere near the one of containers, but it could be worth taking a look at.
-  \item LXD as also it own "rootless" containers feature, with unpriviledged containers, I didn't had the chance to take a look at this but it could be interesting as well.
-  \item My knowledge of virtualization technologies is clearly weaker than containerization one, and there is one result that I can't explain, which is the really bad behaviour of storage drivers others than devicemapper with Kata Containers.
+  \item As the different tool I compared are continuously evolving, and new opportunities appear, the amount of configuration to consider grows really big.  It might be interesting to create a tool that could easily integrate in its benchmark new upcoming solutions.  It would allow to get periodically updated results as some tools grow.
+  \item LXD can also be used to manage virtual machines, I do not know how it works, what it relies on and if the performances are anywhere near the one of containers, but it could be worth taking a look at.
+  \item LXD as also it own "rootless" containers feature, with unprivileged containers, I did not had the chance to take a look at this but it could be interesting as well.
+  \item My knowledge of virtualization technologies is clearly weaker than containerization one, and there is one result that I can not explain, which is the really bad behaviour of storage drivers others than devicemapper with Kata Containers.
 \end{enumerate}
