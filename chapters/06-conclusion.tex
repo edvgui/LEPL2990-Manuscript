@@ -1,10 +1,18 @@
 \chapter{Conclusion}
 
-In this manuscript, I have questioned the current configuration that INGInious has chosen to face the responsiveness challenge of the platform.  I have identified different changes that could be made to it and shown whether or not they would be worth it.  The most interesting change would be to change the current container runtime in use, \texttt{runc}, to \texttt{crun}.
+In this manuscript, I have addressed the following questions and answered them based on results to a suite of micro-benchmarks I created.  Those micro-benchmarks aimed at being representative of the current load faced by INGInious when dealing with student's submissions and bring to light how different configurations could affect the responsiveness of the platform.
 
-I have also presented what would be the best solution for INGInious's case and measured its performance gain over the best existing alternative.  Showing that the difference we can still gain is significant.
+\begin{enumerate}
+  \item Compared to other available solutions, how good is the current configuration chosen by INGInious to face the responsiveness challenge of the platform?  How much better could it be?  How easy would it be to improve it?  Do some solutions involve tradeoffs in terms of maturity, support or maintainability?
+  \item Could there be a solution tailor-made for the specific case of INGInious?  What would it be?  What would it cost to use it?
+  \item What would be the cost of providing stronger/safer isolation to the containers used by INGInious?  Which opportunities could it bring?
+\end{enumerate}
 
-And finally, I have discussed some of the safer isolation solutions that are existing, virtualization and rootless containerization.  Here is a summary of part of the configuration I tried, and what they are worth in terms of performance, isolation, ease of use and support (through documentation, community, forums).
+To respond to the first question, I have questioned the current configuration that INGInious has chosen to face the responsiveness challenge of the platform.  I have identified different changes that could be made to it and shown whether or not they would be worth it.  The most interesting change would be to change the current container runtime in use, \texttt{runc}, to \texttt{crun}, which performs as much as twice as fast in some tests.
+
+For the second question, I have presented what would be the best solution for INGInious's case and measured its performance gain, in my micro-benchmarks, over the best existing alternative.  Showing that the difference we can still gain is significant, performing up to three times as fast as INGInious's current configuration.
+
+And finally, for the last question, I have discussed some of the safer isolation solutions that are existing, virtualization and rootless containerization.  I presented new opportunities it creates for INGInious, like creating tasks where the student would have full root permissions inside of a container.  Here is a summary of part of the configuration I tried, and what they are worth in terms of performance, isolation, ease of use and support (through documentation, community, forums).
 
 \begin{center}
   \begin{tabular}{|ccc|c|c|c|c|}
