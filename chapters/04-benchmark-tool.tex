@@ -1,10 +1,10 @@
 \chapter{Testing}
 
-As previously said, the goal of this thesis will be to identify if some improvements could be made to INGInious, by changing the containerization solution in use.  In order to do this, I have created some tests, and listed different possible configuration that should face those tests.  Based on the results to those tests, I should be able to determine whether or not we can bring improvement to INGInious.
+As previously said, the goal of this thesis will be to identify if some improvements could be made to INGInious, by changing the containerization solution in use.  To do this, I have created some tests and listed different possible configurations that should face those tests.  Based on the results of those tests, I should be able to determine whether or not we can bring improvement to INGInious.
 
 \section{Setup}
 \subsection{Testing environment}
-To be fair in the result comparison, all the different configurations have to be tested with as much in common as possible.  This will allow to determine the influence of varying parameters in those configurations.  To do so, the same machine will be used for all the tests, with its configuration beeing updated accordingly to the requirements of each solution.
+To be fair in the result comparison, all the different configurations have to be tested with as much in common as possible.  This will allow us to determine the influence of varying parameters in those configurations.  To do so, the same machine will be used for all the tests, with its configuration being updated accordingly to the requirements of each solution.
 
 The testing environment used for the final results presented in this work is an old laptop, refurbished with the following configuration:\\
 \begin{tabular}{rl}
@@ -18,22 +18,22 @@ The testing environment used for the final results presented in this work is an 
 \end{tabular}
 
 
-The choice of going with a baremetal setup was not the original one.  But the early results I got showed that some solutions (especially the ones using virtualization) did perform way worse when running inside of a VM.  To get the best out of them, the setup has then been moved out of VMs.
+The choice of going with a bare-metal setup was not the original one.  But the early results I got showed that some solutions (especially the ones using virtualization) did perform way worse when running inside of a VM.  To get the best out of them, the setup has then been moved out of VMs.
 
-\paragraph{}\textbf{Note about cpu:}  The cpu is a little bit weak, and not representative of what a real production server would use to host a container workload.  Unfortunately this was all I had available, and it will have to do.  This means that the results presented in this work can still be a little bit less performant than what we could get typically in the cloud.
+\paragraph{}\textbf{Note about cpu:}  The cpu is a little bit weak, and not representative of what a real production server would use to host a container workload.  Unfortunately, this was all I had available, and it will have to do.  This means that the results presented in this work can still be a little bit less performant than what we could get typically in the cloud.
 \paragraph{}\textbf{Note about memory:}  This is also typically less than what we would have in the cloud, but this is just enough for our case, as we only execute one container at a time, with limited access to memory.
-\paragraph{}\textbf{Note about storage:}  The storage type is important, as it will highly influence the performance of my tests, given the high solicitation of I/O they require.  Using an SSD is therefore essential, both to avoid the need to run the tests for several weeks, and to have measurements more in pair with what cloud provider actually propose.
-\paragraph{}\textbf{Note about operating system:}  The main reason I have chosen Ubuntu is because I am familiar with it, and it made things easier for me to setup.  Also, Ubuntu is often (if not always) an option that cloud providers offer when it comes to choose the OS to install in a VM.
+\paragraph{}\textbf{Note about storage:}  The storage type is important, as it will highly influence the performance of my tests, given the high solicitation of I/O they require.  Using an SSD is therefore essential, both to avoid the need to run the tests for several weeks, and to have measurements more in pair with what cloud provider proposes.
+\paragraph{}\textbf{Note about operating system:}  The main reason I have chosen Ubuntu is that I am familiar with it, and it made things easier for me to set up.  Also, Ubuntu is often (if not always) an option that cloud providers offer when it comes to choosing the OS to install in a VM.
 
 \subsection{Configuration of the environment}
-As a lot of different solutions are going to be tested, and all of them with their own requirements (sometimes conflicting with the ones of other solutions), some work had to be done to make it easier for someone to replicate them.  The configuration of the environment is done with Ansible\footnote{https://docs.ansible.com/} playbooks, with one playbook for each solution to test.
+As a lot of different solutions are going to be tested, and all of them with their requirements (sometimes conflicting with the ones of other solutions), some work had to be done to make it easier for someone to replicate them.  The configuration of the environment is done with Ansible\footnote{https://docs.ansible.com/} playbooks, with one playbook for each solution to test.
 
 All the different configurations are presented in section \ref{subs:candidates}.  The different playbooks can be found in the repository of this project at this address: \href{https://github.com/edvgui/LEPL2990-Benchmark-tool/tree/master/ops}{https://github.com/edvgui/LEPL2990-Benchmark-tool/tree/master/ops}. 
 
 \section{Tests}
-As we already said previously, time is an important aspect in the experience INGInious provides to its users.  The time for a task to be evaluated and the time before this task is evaluated.  In order to improve those two, we will focus in those tests on the booting time of containers and their IO handling (still related to the time overhead that some solution could have compared to another).
+As we already said previously, time is an important aspect of the experience INGInious provides to its users.  The time for a task to be evaluated and the time before this task is evaluated.  To improve those two, in those tests we will focus on the booting time of containers and their IO handling (still related to the time overhead that some solution could have compared to another).
 
-While we are at it, we will also verify if some solutions handle network much poorly than others.  Each test is presented in more details in section \ref{subs:experiments}.
+While we are at it, we will also verify if some solutions handle network much poorly than others.  Each test is presented in more detail in section \ref{subs:experiments}.
 
 
 \subsection{Candidates}\label{subs:candidates}
@@ -48,7 +48,7 @@ A candidate solution is a combinaison of different elements, variabilities, choi
   \item \textbf{Rootless container}: Whether if we run the container in rootless mode.
 \end{itemize}
 
-Though, we cannot compose a candidate solution with one element of each category, randomly picked.  Some element of the solution might only be usable with some of the possibilities for a variability.  The different constraints that we have are listed here:
+Though, we cannot compose a candidate solution with one element of each category, randomly picked.  Some elements of the solution might only be usable with some of the possibilities for a variability.  The different constraints that we have are listed here:
 \begin{itemize}
   \renewcommand\labelitemi{--}
   \item Docker does not support cgroupv2 yet (actually the support has to be added by containerd).
@@ -56,14 +56,14 @@ Though, we cannot compose a candidate solution with one element of each category
   \item LXD does not support cgroupv2 yet.
   \item LXD only supports LXC as runtime, and LXC is only supported by LXD.
   \item LXD only supports btrfs, zfs, directory (dir) and lvm as storage driver.
-  \item Kata Container with Firecracker only supports devicemapper as storage driver.
+  \item Kata Container with Firecracker only supports devicemapper as a storage driver.
   \item zfs, lvm, aufs cannot be used with rootless containers.
   \item cgroup (v1) cannot be used with rootless containers.
   \item runc does not support cgroupv2 yet.
   % TODO Check if kata-runtime is compatible with cgroupv2
 \end{itemize}
 
-The list of different candidate solution we can compare is presented in the table below.  Each container will be launched with a CPU limitation of one single core, and memory limitation of 1GB.  This is more than enough for each test that will be done.  A network interface will be only added to the container if it needs it for the specific test.\\\\
+The list of different candidate solutions we can compare is presented in the table below.  Each container will be launched with a CPU limitation of one single-core, and memory limitation of 1GB.  This is more than enough for each test that will be done.  A network interface will be only added to the container if it needs it for the specific test.\\\\
 
 \newcounter{rowno}
 \setcounter{rowno}{0}
@@ -161,22 +161,22 @@ This gives us three interesting measurements:
 
 The command available to interact with each step of the lifecycle of the containers for each solution can be found in Appendix \ref{appendix:container-life-cycle}, along with some more explanation about what is done in each step.
 
-In order to do this, each container will be running as first process a shell\footnote{except for LXD, which natively has an init process running in each container}, which will never receive any input, but is here to ensure that the container will stay up as long as we need it.  When we do not need the container anymore, we simply kill all the processes in it.
+To do this, each container will be running as first process a shell\footnote{except for LXD, which natively has an init process running in each container}, which will never receive any input, but is here to ensure that the container will stay up as long as we need it.  When we do not need the container anymore, we simply kill all the processes in it.
 
 \subsubsection{Booting time}
-This test aims at determining the candidate solution that can provide a ready to run container the fastest.  In order to measure this, a simple container composed of only the base image is created, in which the simple command \texttt{/bin/echo Hello World} is executed.  The best candidate would be the one that has the shortest creation and starting time ($t_{create} + t_{start}$).  The execution time ($t_{exec}$) is also a good illustration of the overhead caused by all the steps taken before actually starting the process in the container.
+This test aims at determining the candidate solution that can provide a ready to run container the fastest.  To measure this, a simple container composed of only the base image is created, in which the simple command \texttt{/bin/echo Hello World} is executed.  The best candidate would be the one that has the shortest creation and starting time ($t_{create} + t_{start}$).  The execution time ($t_{exec}$) is also a good illustration of the overhead caused by all the steps taken before actually starting the process in the container.
 
 \subsubsection{Basic I/O performances}
-Those tests aim at determining mostly the influence of the usage of each storage driver on the performances of an application that relies highly on it.  Four different tests are done here: big file read and write, and great amount of file read and write.  The best candidate solution would be the one with the shortest creation, starting and execution time ($t_{create} + t_{start} + t_{exec}$).
+Those tests aim at determining mostly the influence of the usage of each storage driver on the performances of an application that relies highly on it.  Four different tests are done here: big file read and write, and a great amount of file read and write.  The best candidate solution would be the one with the shortest creation, starting and execution time ($t_{create} + t_{start} + t_{exec}$).
 
-For the first one, five sqlite databases have been created, of five different size (\texttt{151.6 kB}, \texttt{536.6 kB}, \texttt{2.6 MB}, \texttt{11.9 MB} and \texttt{111.6 MB}, about one order of magnitude apart from each other).  We use an sqlite database as everything will be stored in one file, and no daemon needs to be running, which simplify the setup of the tests.  Plus this is a more realistic workload than just reading/writing one gigantic file.
-The read test will do a select operation on each table of the database without any filter, displaying all of the table content.  The write test will duplicate each table in the database.  The database chosen as basis to generate all the presented one is \texttt{tpcc}\footnote{\href{https://relational.fit.cvut.cz/dataset/TPCC}{ttps://relational.fit.cvut.cz/dataset/TPCC}}, which is a benchmark database, perfect for our case.  The biggest database used is an export from the tpcc database, the other ones are created by removing content of some tables from this same database.
+For the first one, five SQLite databases have been created, of five different size (\texttt{151.6 kB}, \texttt{536.6 kB}, \texttt{2.6 MB}, \texttt{11.9 MB} and \texttt{111.6 MB}, about one order of magnitude apart from each other).  We use an SQLite database as everything will be stored in one file, and no daemon needs to be running, which simplifies the setup of the tests.  Plus this is a more realistic workload than just reading/writing one gigantic file.
+The reading test will do a select operation on each table of the database without any filter, displaying all of the table content.  The writing test will duplicate each table in the database.  The database chosen as basis to generate all the presented one is \texttt{tpcc}\footnote{\href{https://relational.fit.cvut.cz/dataset/TPCC}{ttps://relational.fit.cvut.cz/dataset/TPCC}}, which is a benchmark database, perfect for our case.  The biggest database used is an export from the tpcc database, the other ones are created by removing the content of some tables from this same database.
 
-For the second one, five loads of small file have been created (10, 100, 1000, 10 000 and 100 000 files).  The content of the file is alphanumeric, and completely random (no file should be a duplication of another one), each file is $4096$ character (and bytes) long.  This represents the best the usual kind of file a user could access, to read or write content from/to it. 
-The read test will load the content of each file in memory, then discard it and move to the next one.  The write test will extract an uncompressed archive (\texttt{tar}) containing all those files.
+For the second one, five loads of small file have been created (10, 100, 1000, 10 000 and 100 000 files).  The content of the file is alphanumeric and completely random (no file should be a duplication of another one), each file is $4096$ character (and bytes) long.  This represents the best the usual kind of file a user could access, to read or write content from/to it. 
+The reading test will load the content of each file in memory, then discard it and move to the next one.  The writing test will extract an uncompressed archive (\texttt{tar}) containing all those files.
 
 \subsubsection{Network setup time}
-This tests aims also at determining the candidate solution that can setup a ready to run container the fastest, but with the increased complexity of adding a network interface, and mapped ports, so that the host machine can send requests to an http server running inside of the container.  I have chosen a \texttt{lighttpd} server, for its lightness, and its wide use in container application.  It takes one more time measurement here, the time at which we received the first response at the http requests we send to our server ($t_r$).  The best candidate would be the one that has the shortest delay before this response ($t_{create} + t_{start} + t_{exec} + t_{response}$, with $t_{response}=t_r - t_e$).  The execution time corresponds to the execution of the command that launches the server as detached process.
+This test aims also at determining the candidate solution that can set up a ready to run container the fastest, but with the increased complexity of adding a network interface, and mapped ports, so that the host machine can send requests to an HTTP server running inside of the container.  I have chosen a \texttt{lighttpd} server, for its lightness, and its wide use in container application.  It takes one more time measurement here, the time at which we received the first response at the HTTP requests we send to our server ($t_r$).  The best candidate would be the one that has the shortest delay before this response ($t_{create} + t_{start} + t_{exec} + t_{response}$, with $t_{response}=t_r - t_e$).  The execution time corresponds to the execution of the command that launches the server as a detached process.
 
 \subsubsection{Ping response time}
-This really simple test aims at determining if some solution provide a much weaker network solution to the container than the others.  We simply perform a ping request to \texttt{1.1.1.1}, and compare the response time we get for each solution.  The best solution would be the one with the shortest ping response time.
+This really simple test aims at determining if some solution provides a much weaker network solution to the container than the others.  We simply perform a ping request to \texttt{1.1.1.1}, and compare the response time we get for each solution.  The best solution would be the one with the shortest ping response time.
