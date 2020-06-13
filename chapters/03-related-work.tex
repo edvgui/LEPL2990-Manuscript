@@ -40,7 +40,7 @@ This is not the first time that researchers try to compare different containeriz
 \begin{itemize}
 \renewcommand\labelitemi{--}
   \item reducing the image size and the memory footprint of virtual machines.  They do so by including in the VM only what is necessary to the application that is meant to be executed in it.
-  \item introducing noxs (no XenStore), a new implementation of Xen, without XenStore (which was a real bottleneck for fast instantiation of multiple VMs).
+  \item introducing noxs (no XenStore\footnote{The XenStore is a registry containing informations about running VMs and their devices.}), a new implementation of Xen, without XenStore (which was a real bottleneck for fast instantiation of multiple VMs).
   \item splitting the Xen's toolstack into what can be run before the VM creation and what as to be done during it.  Allowing to pre-initialize VMs.
   \item replacing the Hotplug Script by xendevd, a binary daemon that can execute pre-defined setup more efficiently.
 \end{itemize}
